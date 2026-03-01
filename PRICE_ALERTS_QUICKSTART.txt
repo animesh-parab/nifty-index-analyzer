@@ -1,0 +1,83 @@
+================================================================================
+PRICE ALERTS - QUICK START (30 SECONDS)
+================================================================================
+
+🔔 Get instant browser notifications when Nifty reaches your target price!
+
+================================================================================
+STEP 1: START DASHBOARD (5 seconds)
+================================================================================
+
+Windows:  START_DASHBOARD.bat
+Linux/Mac: streamlit run app.py
+
+================================================================================
+STEP 2: OPEN SIDEBAR (5 seconds)
+================================================================================
+
+Look for the sidebar on the LEFT side of the screen.
+If hidden, click the > arrow in the top-left corner.
+
+================================================================================
+STEP 3: ADD YOUR FIRST ALERT (10 seconds)
+================================================================================
+
+In the sidebar, find "Add New Alert":
+
+1. Target Price: Enter your price (e.g., 25500)
+2. Alert When: Choose "above" or "below"
+3. Note: Add a reminder (optional)
+4. Click "➕ Add Alert"
+
+Done! ✅
+
+================================================================================
+STEP 4: WAIT FOR NOTIFICATION (10 seconds)
+================================================================================
+
+When price reaches your target:
+- 🔔 Browser popup appears
+- 📢 Toast notification shows
+- ⚠️ Warning banner at top
+
+That's it! You're now using price alerts!
+
+================================================================================
+EXAMPLES
+================================================================================
+
+Example 1: Resistance Alert
+- Target Price: 25500
+- Alert When: above
+- Note: "Resistance breakout"
+
+Example 2: Support Alert
+- Target Price: 25300
+- Alert When: below
+- Note: "Support broken"
+
+================================================================================
+TIPS
+================================================================================
+
+✅ Set 3-5 alerts at key levels
+✅ Use notes to remember your strategy
+✅ Clear triggered alerts daily
+✅ Keep dashboard open during market hours
+
+================================================================================
+NEED HELP?
+================================================================================
+
+Full Guide: PRICE_ALERTS_GUIDE.md
+Test Alerts: python test_price_alerts.py
+Support: Check logs/2026-02-27/app.log
+
+================================================================================
+COST: $0.00 - COMPLETELY FREE!
+================================================================================
+
+No SMS fees • No email charges • No subscriptions
+Browser notifications are 100% free forever!
+
+================================================================================

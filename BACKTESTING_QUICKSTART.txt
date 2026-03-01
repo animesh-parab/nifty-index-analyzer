@@ -1,0 +1,221 @@
+================================================================================
+BACKTESTING ENGINE - QUICK START GUIDE
+================================================================================
+
+WHAT IS BACKTESTING?
+Test your AI predictions against historical data to see how well they would
+have performed in the past.
+
+================================================================================
+HOW TO USE (3 STEPS)
+================================================================================
+
+1. OPEN BACKTESTING
+   - Look in sidebar for "📊 Backtesting Engine"
+   - Click "🚀 Open Backtesting" button
+   - UI appears below dashboard
+
+2. CONFIGURE TEST
+   - Index: NIFTY or BANKNIFTY
+   - Days: 7 (recommended for quick test)
+   - Interval: 5m (most detailed)
+   - Timeframe: 30 minutes (prediction horizon)
+   - Capital: ₹100,000 (starting amount)
+
+3. RUN & ANALYZE
+   - Click "🚀 Run Backtest"
+   - Wait 2-5 minutes
+   - View results automatically
+
+================================================================================
+QUICK SETTINGS
+================================================================================
+
+BEGINNER (Fast Test):
+- Days: 7
+- Interval: 15m
+- Timeframe: 30 min
+- Time: ~2 minutes
+
+INTERMEDIATE (Balanced):
+- Days: 14
+- Interval: 5m
+- Timeframe: 30 min
+- Time: ~3-4 minutes
+
+ADVANCED (Comprehensive):
+- Days: 30
+- Interval: 5m
+- Timeframe: 60 min
+- Time: ~5-10 minutes
+
+================================================================================
+UNDERSTANDING RESULTS
+================================================================================
+
+KEY METRICS:
+
+Win Rate:
+  >60% = Excellent
+  50-60% = Good
+  40-50% = Fair
+  <40% = Needs work
+
+Profit Factor:
+  >2.0 = Excellent
+  1.5-2.0 = Good
+  1.0-1.5 = Fair
+  <1.0 = Losing
+
+Total Return:
+  Positive = Profitable
+  Negative = Losing
+  Compare to initial capital
+
+================================================================================
+WHAT YOU'LL SEE
+================================================================================
+
+1. PERFORMANCE SUMMARY
+   - Total return (₹ and %)
+   - Win rate (% correct)
+   - Final capital
+   - Profit factor
+
+2. DETAILED METRICS
+   - Total trades
+   - Wins vs losses
+   - Average win/loss
+   - Direction accuracy
+
+3. CHARTS
+   - Equity curve (capital over time)
+   - Win/loss distribution
+   - Direction accuracy
+
+4. TRADE HISTORY
+   - Last 20 trades
+   - Entry/exit prices
+   - P&L per trade
+   - Accuracy
+
+================================================================================
+EXPORT OPTIONS
+================================================================================
+
+JSON Report:
+- Complete backtest data
+- All metrics
+- File: backtest_report.json
+
+CSV Trades:
+- Trade-by-trade details
+- Open in Excel
+- File: backtest_trades.csv
+
+================================================================================
+TIPS FOR BEST RESULTS
+================================================================================
+
+1. Start with 7 days to get quick feedback
+2. Try different intervals (5m, 15m, 30m)
+3. Test both NIFTY and BANK NIFTY
+4. Compare multiple timeframes
+5. Look for patterns in accuracy
+
+================================================================================
+COMMON QUESTIONS
+================================================================================
+
+Q: How long does it take?
+A: 2-10 minutes depending on settings
+
+Q: Is it accurate?
+A: It's a simulation. Real trading will differ.
+
+Q: What's a good win rate?
+A: 50-60% is good for directional trading
+
+Q: Can I test options?
+A: Not yet, only directional predictions
+
+Q: Why negative returns?
+A: Normal for some periods. Try different dates.
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: No data
+Solution: Check internet, try fewer days
+
+Problem: Takes too long
+Solution: Use 15m interval, reduce days
+
+Problem: Low win rate
+Solution: Try different timeframe, review logic
+
+Problem: Can't see results
+Solution: Scroll down, results appear below
+
+================================================================================
+COMMAND LINE (OPTIONAL)
+================================================================================
+
+Quick test from terminal:
+
+python backtesting_engine.py
+
+Custom test:
+
+python -c "from backtesting_engine import quick_backtest; \
+quick_backtest(days=14, interval='15m', timeframe=60)"
+
+================================================================================
+EXAMPLE WORKFLOW
+================================================================================
+
+1. Open backtesting from sidebar
+2. Set: 7 days, 5m, 30min, ₹100,000
+3. Click "Run Backtest"
+4. Wait 2-3 minutes
+5. Check win rate (aim for >50%)
+6. Review equity curve
+7. Export results if good
+8. Try different settings
+9. Compare results
+10. Use insights to improve strategy
+
+================================================================================
+REMEMBER
+================================================================================
+
+✓ Past performance ≠ future results
+✓ Use as guidance, not guarantee
+✓ Test multiple scenarios
+✓ Compare different periods
+✓ Focus on consistency, not single tests
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+After your first backtest:
+1. Try different timeframes
+2. Test both indices
+3. Compare 5m vs 15m intervals
+4. Look for patterns
+5. Adjust strategy based on results
+
+================================================================================
+NEED HELP?
+================================================================================
+
+Read full guide: BACKTESTING_ENGINE_GUIDE.md
+Check logs for errors
+Try default settings first
+Review example results
+
+================================================================================
+LAST UPDATED: February 27, 2026
+================================================================================

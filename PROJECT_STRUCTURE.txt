@@ -1,0 +1,397 @@
+================================================================================
+NIFTY AI PREDICTOR - PROJECT STRUCTURE
+================================================================================
+
+📁 PROJECT ROOT
+│
+├── 🚀 MAIN APPLICATION FILES
+│   ├── app.py                          # Main Streamlit dashboard
+│   ├── config.py                       # Configuration settings
+│   ├── .env                            # API keys (DO NOT SHARE)
+│   └── requirements.txt                # Python dependencies
+│
+├── 📊 DATA FETCHING
+│   ├── data_fetcher.py                 # Multi-source data fetcher (NSE, Angel One, yfinance)
+│   ├── angel_one_fetcher.py            # Angel One SmartAPI integration
+│   ├── news_fetcher_scheduled.py       # News sentiment analysis
+│   └── download_instruments.py         # Download Angel One instrument list
+│
+├── 🤖 AI PREDICTION ENGINE
+│   └── ai_engine_consensus.py          # Dual-AI consensus (Groq + Gemini)
+│
+├── 📈 TECHNICAL ANALYSIS
+│   ├── indicators.py                   # Technical indicators (RSI, MACD, EMA, etc.)
+│   └── greeks.py                       # Options Greeks calculator
+│
+├── 📋 DATA FILES
+│   ├── instruments_nifty_options.csv   # Nifty options instrument list (185K instruments)
+│   └── token_map.json                  # Strike to token mapping (1,558 Nifty options)
+│
+├── 🧪 TESTING FILES
+│   ├── test_consensus.py               # Test dual-AI consensus system
+│   ├── test_groq_api.py                # Test Groq API connection
+│   ├── test_tokens_only.py             # Test Angel One token lookup
+│   ├── test_all.bat                    # Run all tests (Windows)
+│   ├── test_all.sh                     # Run all tests (Linux/Mac)
+│   ├── run_tests.bat                   # Alternative test runner (Windows)
+│   └── run_tests.sh                    # Alternative test runner (Linux/Mac)
+│
+├── 🚀 STARTUP SCRIPTS
+│   └── START_DASHBOARD.bat             # Quick start dashboard (Windows)
+│
+├── 📚 DOCUMENTATION
+│   ├── README.md                       # Quick start guide
+│   ├── PROJECT_STATUS.md               # Current project status
+│   ├── PREDICTION_MODEL_EXPLAINED.txt  # How AI predictions work
+│   ├── COST_ANALYSIS.md                # Complete cost breakdown (everything is FREE)
+│   ├── FUTURE_IMPROVEMENTS.txt         # 50+ ideas for future enhancements
+│   ├── PROJECT_STRUCTURE.txt           # This file
+│   │
+│   ├── 🔌 API INTEGRATION DOCS
+│   │   ├── ANGEL_ONE_INTEGRATION.md    # Angel One setup guide
+│   │   ├── ANGEL_ONE_OPTIONS_STATUS.md # Options chain implementation status
+│   │   ├── ANGEL_ONE_RATE_LIMITS.md    # Rate limits and usage analysis
+│   │   ├── OPTIONS_CHAIN_STRATEGY.md   # Options chain strategy
+│   │   ├── DUAL_AI_CONSENSUS.md        # Dual-AI consensus documentation
+│   │   └── DUAL_AI_CONSENSUS_STATUS.md # Consensus implementation status
+│   │
+│   └── 📝 CONFIGURATION EXAMPLES
+│       └── env.example                 # Example .env file (template)
+│
+├── 📁 LOGS
+│   └── logs/2026-02-27/
+│       └── app.log                     # Application logs
+│
+└── 🗑️ CACHE
+    └── __pycache__/                    # Python bytecode cache
+
+================================================================================
+FILE DESCRIPTIONS
+================================================================================
+
+🚀 MAIN APPLICATION FILES
+-------------------------
+
+app.py (1,000+ lines)
+- Main Streamlit dashboard
+- Real-time price display
+- AI predictions with consensus
+- Technical indicators
+- Options chain analysis
+- News sentiment
+- Interactive charts
+- Auto-refresh every 60 seconds
+
+config.py (100 lines)
+- API keys configuration
+- Market settings (hours, timezone)
+- Technical indicator parameters
+- Data fetch settings
+- NSE API headers
+
+.env (50 lines)
+- API keys (Groq, Gemini, Angel One)
+- Credentials (DO NOT SHARE)
+- Environment variables
+
+requirements.txt (17 packages)
+- streamlit, yfinance, pandas, numpy
+- plotly, ta, groq, google-genai
+- All dependencies for the project
+
+================================================================================
+
+📊 DATA FETCHING
+----------------
+
+data_fetcher.py (600+ lines)
+- Multi-source data fetching
+- Priority: NSE API → Angel One → yfinance
+- Smart fallback handling
+- Session management
+- Rate limiting
+- Retry logic
+- Functions:
+  * get_live_nifty_price()
+  * get_candle_data()
+  * get_india_vix()
+  * get_options_chain()
+  * get_global_cues()
+  * is_market_open()
+  * get_market_status()
+
+angel_one_fetcher.py (400+ lines)
+- Angel One SmartAPI integration
+- Real-time Nifty price (0 delay)
+- Options chain data
+- Token lookup from local file
+- Functions:
+  * fetch_nifty_angel()
+  * fetch_vix_angel()
+  * fetch_candles_angel()
+  * fetch_options_chain_angel()
+  * get_option_token()
+  * get_nearest_expiry()
+
+news_fetcher_scheduled.py (200+ lines)
+- RSS feed parsing
+- Sentiment analysis
+- Scheduled fetching (9 AM, 12 PM, 3 PM)
+- Sources: Economic Times, MoneyControl, LiveMint, Business Standard
+
+download_instruments.py (100 lines)
+- Download Angel One instrument list
+- Filter Nifty options
+- Create token mapping
+- Run once to update instruments
+
+================================================================================
+
+🤖 AI PREDICTION ENGINE
+-----------------------
+
+ai_engine_consensus.py (500+ lines)
+- Dual-AI consensus system
+- Groq (Llama 3.3 70B) + Gemini (2.5 Flash)
+- Parallel API calls (3-5 seconds)
+- Consensus calculation:
+  * STRONG: Both agree → Confidence +10%
+  * MODERATE: Partial agreement → Confidence -5%
+  * WEAK: Disagreement → Confidence -20%
+- Fallback to rule-based if both fail
+- Functions:
+  * get_consensus_prediction()
+  * get_rule_based_prediction()
+  * _call_groq_api()
+  * _call_gemini_api()
+  * _calculate_consensus()
+
+================================================================================
+
+📈 TECHNICAL ANALYSIS
+---------------------
+
+indicators.py (400+ lines)
+- Technical indicators calculation
+- RSI, MACD, EMA, Bollinger Bands, ATR, VWAP
+- Candlestick pattern detection
+- Signal generation
+- Functions:
+  * calculate_all_indicators()
+  * get_indicator_summary()
+  * detect_candlestick_patterns()
+
+greeks.py (200 lines)
+- Options Greeks calculator
+- Delta, Gamma, Theta, Vega
+- Black-Scholes model
+- ATM Greeks calculation
+- Functions:
+  * get_atm_greeks()
+  * calculate_greeks()
+
+================================================================================
+
+📋 DATA FILES
+-------------
+
+instruments_nifty_options.csv (185,982 rows)
+- Complete Angel One instrument list
+- All Nifty options (CE and PE)
+- Columns: symbol, token, expiry, strike, type
+
+token_map.json (1,558 entries)
+- Strike to token mapping
+- Format: {"25300_CE": 54907, "25300_PE": 54908, ...}
+- Used for fast token lookup
+
+================================================================================
+
+🧪 TESTING FILES
+----------------
+
+test_consensus.py
+- Test dual-AI consensus system
+- Verify Groq and Gemini APIs
+- Check consensus calculation
+
+test_groq_api.py
+- Test Groq API connection
+- Verify API key
+- Check model availability
+
+test_tokens_only.py
+- Test Angel One token lookup
+- Verify instrument file
+- Check token mapping
+
+test_all.bat / test_all.sh
+- Run all tests in sequence
+- Check system health
+
+================================================================================
+
+📚 DOCUMENTATION
+----------------
+
+README.md
+- Quick start guide
+- Installation instructions
+- How to run the dashboard
+- Troubleshooting
+
+PROJECT_STATUS.md
+- Current implementation status
+- What's working
+- What's pending
+- Known issues
+
+PREDICTION_MODEL_EXPLAINED.txt
+- How AI predictions work
+- Dual-model approach
+- Accuracy expectations
+- Confidence scoring
+
+COST_ANALYSIS.md
+- Complete cost breakdown
+- API usage analysis
+- Everything is FREE
+- No hidden costs
+
+FUTURE_IMPROVEMENTS.txt
+- 50+ enhancement ideas
+- Prioritized roadmap
+- Implementation estimates
+- Cost projections
+
+ANGEL_ONE_INTEGRATION.md
+- Angel One setup guide
+- API key configuration
+- Rate limits
+- Best practices
+
+DUAL_AI_CONSENSUS.md
+- Consensus system documentation
+- How it works
+- Benefits
+- Configuration
+
+================================================================================
+
+📁 LOGS
+-------
+
+logs/2026-02-27/app.log
+- Application logs
+- Error tracking
+- API call logs
+- Performance metrics
+
+================================================================================
+
+🗑️ CACHE
+---------
+
+__pycache__/
+- Python bytecode cache
+- Auto-generated
+- Can be deleted safely
+
+================================================================================
+
+FILE COUNT SUMMARY
+==================
+
+Total Files: 29 essential files
+
+Core Application: 4 files
+Data Fetching: 4 files
+AI Engine: 1 file
+Technical Analysis: 2 files
+Data Files: 2 files
+Testing: 7 files
+Startup Scripts: 1 file
+Documentation: 8 files
+
+Lines of Code: ~4,000 lines
+Documentation: ~3,000 lines
+
+================================================================================
+
+DEPENDENCIES
+============
+
+Python Packages (17):
+- streamlit (dashboard framework)
+- yfinance (market data)
+- pandas (data manipulation)
+- numpy (numerical computing)
+- scipy (scientific computing)
+- plotly (interactive charts)
+- ta (technical analysis)
+- requests (HTTP requests)
+- beautifulsoup4 (HTML parsing)
+- feedparser (RSS parsing)
+- pytz (timezone handling)
+- streamlit-autorefresh (auto-refresh)
+- lxml (XML parsing)
+- groq (Groq AI API)
+- google-genai (Gemini AI API)
+- python-dotenv (environment variables)
+- urllib3 (HTTP client)
+
+External APIs (6):
+- Groq API (AI predictions)
+- Gemini API (AI predictions)
+- Angel One SmartAPI (market data)
+- NSE API (market data fallback)
+- yfinance (market data fallback)
+- RSS feeds (news)
+
+================================================================================
+
+DISK SPACE USAGE
+================
+
+Total: ~50 MB
+
+Breakdown:
+- Python code: ~500 KB
+- Documentation: ~200 KB
+- Data files (CSV): ~45 MB
+- Logs: ~1 MB
+- Cache: ~3 MB
+
+================================================================================
+
+MEMORY USAGE
+============
+
+Runtime Memory: ~200-300 MB
+
+Breakdown:
+- Streamlit: ~100 MB
+- Pandas DataFrames: ~50 MB
+- Plotly charts: ~30 MB
+- API clients: ~20 MB
+- Cache: ~50 MB
+
+================================================================================
+
+PERFORMANCE
+===========
+
+Dashboard Load Time: 3-5 seconds
+Data Fetch Time: 1-2 seconds
+AI Prediction Time: 3-5 seconds (parallel)
+Chart Render Time: 1-2 seconds
+Total Refresh Time: 5-10 seconds
+
+API Calls per Minute: 16.6 calls
+API Calls per Day: 6,237 calls
+API Calls per Month: 137,214 calls
+
+================================================================================
+
+LAST UPDATED: February 27, 2026
+================================================================================

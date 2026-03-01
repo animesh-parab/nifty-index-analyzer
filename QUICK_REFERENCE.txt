@@ -1,0 +1,253 @@
+================================================================================
+NIFTY AI PREDICTOR - QUICK REFERENCE CARD
+================================================================================
+
+🚀 START DASHBOARD
+------------------
+Windows:  START_DASHBOARD.bat
+Linux/Mac: streamlit run app.py
+
+🧪 RUN TESTS
+------------
+Windows:  test_all.bat
+Linux/Mac: ./test_all.sh
+
+📊 KEY FEATURES
+---------------
+✅ Real-time Nifty 50 price (Angel One + NSE + yfinance)
+✅ Dual-AI predictions (Groq Llama 3.3 70B + Gemini 2.5 Flash)
+✅ Options chain analysis (PCR, Max Pain, OI)
+✅ Technical indicators (RSI, MACD, EMA, BB, ATR, VWAP)
+✅ News sentiment analysis (4 RSS feeds)
+✅ Global market cues (Dow, S&P, Nasdaq, etc.)
+✅ Interactive charts with Plotly
+✅ Auto-refresh every 60 seconds
+✅ 🔔 Price Alerts with browser notifications (NEW!)
+
+💰 COST
+-------
+$0.00 - Everything is 100% FREE forever
+
+📈 API USAGE
+------------
+Daily: 6,237 calls out of 136,000 limit (4.6% used)
+Groq: 375/14,400 (2.6%)
+Gemini: 375/1,500 (25%)
+Angel One: 5,025/120,000 (4.2%)
+
+⏰ MARKET HOURS
+---------------
+Pre-Open: 9:00 AM - 9:15 AM IST
+Open: 9:15 AM - 3:30 PM IST (6.25 hours)
+Closed: 3:30 PM onwards
+
+🔑 API KEYS (in .env)
+---------------------
+GROQ_API_KEY - Groq AI (free forever)
+GEMINI_API_KEY - Gemini AI (free forever)
+ANGEL_API_KEY - Angel One (free forever)
+
+📁 KEY FILES
+------------
+app.py - Main dashboard
+config.py - Configuration
+data_fetcher.py - Data fetching
+ai_engine_consensus.py - AI predictions
+indicators.py - Technical analysis
+
+📚 DOCUMENTATION
+----------------
+README.md - Quick start
+PROJECT_STATUS.md - Current status
+COST_ANALYSIS.md - Cost breakdown
+FUTURE_IMPROVEMENTS.txt - 50+ ideas
+PROJECT_STRUCTURE.txt - File structure
+
+🐛 TROUBLESHOOTING
+------------------
+Issue: Dashboard won't start
+Fix: pip install -r requirements.txt
+
+Issue: API errors
+Fix: Check .env file has all keys
+
+Issue: No data showing
+Fix: Check market hours (9:15 AM - 3:30 PM IST)
+
+Issue: Slow performance
+Fix: Clear cache (Ctrl+Shift+R in browser)
+
+🎯 NEXT STEPS
+-------------
+1. Read FUTURE_IMPROVEMENTS.txt
+2. Pick Priority 1 features
+3. Start implementing
+4. Test thoroughly
+5. Update documentation
+
+📞 SUPPORT
+----------
+Check logs: logs/2026-02-27/app.log
+Run tests: test_all.bat
+Read docs: README.md
+
+================================================================================
+QUICK COMMANDS
+================================================================================
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start dashboard
+streamlit run app.py
+
+# Run tests
+python test_consensus.py
+python test_groq_api.py
+python test_tokens_only.py
+
+# Download instruments (run once)
+python download_instruments.py
+
+# Clear cache
+rm -rf __pycache__
+rm -rf .streamlit/cache
+
+# View logs
+cat logs/2026-02-27/app.log
+
+================================================================================
+KEYBOARD SHORTCUTS (in browser)
+================================================================================
+
+Ctrl+R - Refresh dashboard
+Ctrl+Shift+R - Hard refresh (clear cache)
+F11 - Fullscreen
+Esc - Exit fullscreen
+
+================================================================================
+PERFORMANCE TIPS
+================================================================================
+
+✅ Use 5-minute cache for options (already configured)
+✅ Run during market hours only (9:15 AM - 3:30 PM)
+✅ Close unused browser tabs
+✅ Use Chrome/Edge for best performance
+✅ Clear cache weekly
+
+================================================================================
+SAFETY CHECKLIST
+================================================================================
+
+✅ Never share .env file (contains API keys)
+✅ Keep API keys secret
+✅ Don't commit .env to git (already in .gitignore)
+✅ Backup .env file separately
+✅ Monitor API usage (check COST_ANALYSIS.md)
+
+================================================================================
+FEATURE STATUS
+================================================================================
+
+✅ WORKING:
+- Real-time Nifty price
+- Dual-AI predictions (Groq working, Gemini partial)
+- Options chain (NSE + Angel One)
+- Technical indicators
+- News sentiment
+- Global cues
+- Interactive charts
+- Auto-refresh
+
+⚠️ PARTIAL:
+- Gemini AI (JSON parsing issues, falls back to Groq)
+
+❌ NOT IMPLEMENTED:
+- Bank Nifty support
+- Price alerts
+- Historical accuracy tracking
+- Backtesting
+- Mobile app
+(See FUTURE_IMPROVEMENTS.txt for full list)
+
+================================================================================
+DAILY CHECKLIST
+================================================================================
+
+BEFORE MARKET OPEN (9:00 AM):
+□ Start dashboard
+□ Check API keys are valid
+□ Verify data sources working
+
+DURING MARKET (9:15 AM - 3:30 PM):
+□ Monitor predictions
+□ Check for errors in logs
+□ Note any API failures
+
+AFTER MARKET CLOSE (3:30 PM):
+□ Review prediction accuracy
+□ Check logs for issues
+□ Plan improvements
+
+WEEKLY:
+□ Clear cache
+□ Review API usage
+□ Update instruments (if needed)
+
+MONTHLY:
+□ Clean logs folder
+□ Review FUTURE_IMPROVEMENTS.txt
+□ Update documentation
+
+================================================================================
+EMERGENCY CONTACTS
+================================================================================
+
+Groq API Issues: https://console.groq.com
+Gemini API Issues: https://aistudio.google.com
+Angel One Issues: https://smartapi.angelone.in
+NSE Issues: https://www.nseindia.com
+
+================================================================================
+VERSION INFO
+================================================================================
+
+Version: 1.0
+Last Updated: February 27, 2026
+Python: 3.8+
+Streamlit: 1.32.0+
+Total Files: 29
+Lines of Code: ~4,000
+Documentation: ~3,000 lines
+
+================================================================================
+CREDITS
+================================================================================
+
+Data Sources:
+- Angel One SmartAPI (real-time data)
+- NSE API (fallback)
+- yfinance (fallback)
+- RSS feeds (news)
+
+AI Models:
+- Groq (Llama 3.3 70B)
+- Gemini (2.5 Flash)
+
+Libraries:
+- Streamlit (dashboard)
+- Plotly (charts)
+- Pandas (data)
+- TA-Lib (indicators)
+
+================================================================================
+LICENSE
+================================================================================
+
+Free to use for personal trading
+Do not redistribute without permission
+API keys are personal and non-transferable
+
+================================================================================
+LAST UPDATED: February 27, 2026
+================================================================================

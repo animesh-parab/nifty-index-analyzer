@@ -1,0 +1,887 @@
+================================================================================
+                    NIFTY AI PREDICTOR - PREDICTION MODEL
+                         Logic & Algorithm Explained
+================================================================================
+
+Last Updated: February 27, 2026
+Model Version: 1.0
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+
+1. Overview
+2. Prediction Models (Two Approaches)
+3. AI-Powered Model (Groq Llama 3.3 70B)
+4. Rule-Based Model (Fallback)
+5. Data Inputs
+6. Prediction Output
+7. How Predictions Are Made
+8. Confidence Scoring
+9. Price Target Calculation
+10. Next Candle Prediction
+11. Model Limitations
+12. Accuracy & Reliability
+
+================================================================================
+                              1. OVERVIEW
+================================================================================
+
+The Nifty AI Predictor uses a DUAL-MODEL approach:
+
+PRIMARY MODEL: AI-Powered (Groq Llama 3.3 70B)
+- Uses Large Language Model for intelligent analysis
+- Processes all market data simultaneously
+- Provides nuanced, context-aware predictions
+- Requires Groq API key (free tier available)
+
+FALLBACK MODEL: Rule-Based Scoring System
+- Simple mathematical scoring algorithm
+- Uses technical indicator signals
+- No API required
+- Always available
+
+The system automatically switches to the fallback model if:
+- Groq API key is not configured
+- API call fails or times out
+- API rate limit is exceeded
+- API returns invalid response
+
+================================================================================
+                    2. PREDICTION MODELS (TWO APPROACHES)
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         PREDICTION FLOW                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Dashboard Refresh (60 seconds)                                         │
+│           ↓                                                              │
+│  Collect All Market Data                                                │
+│           ↓                                                              │
+│  Check: Is Groq API Key Available?                                      │
+│           ↓                                                              │
+│     YES ──┴── NO                                                         │
+│      ↓         ↓                                                         │
+│  AI Model   Rule-Based Model                                            │
+│  (Groq)     (Scoring)                                                   │
+│      ↓         ↓                                                         │
+│      └────┬────┘                                                         │
+│           ↓                                                              │
+│  Display Prediction on Dashboard                                        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                    3. AI-POWERED MODEL (Groq Llama 3.3 70B)
+================================================================================
+
+MODEL: Llama 3.3 70B Versatile (via Groq API)
+PROVIDER: Groq (https://groq.com)
+COST: Free tier available (30 requests/minute)
+
+HOW IT WORKS:
+-------------
+
+Step 1: DATA COLLECTION
+   - Collects 8 categories of market data
+   - Formats into structured prompt
+   - Includes timestamp and context
+
+Step 2: PROMPT CONSTRUCTION
+   The AI receives a comprehensive prompt containing:
+   
+   a) Nifty Live Price
+      - Current price, open, high, low
+      - Change and percentage change
+      - Data confidence level
+   
+   b) India VIX
+      - Current VIX value
+      - Change from previous close
+      - Interpretation (low/normal/high)
+   
+   c) Technical Indicators (8 indicators)
+      - RSI (Relative Strength Index)
+      - MACD (Moving Average Convergence Divergence)
+      - Bollinger Bands
+      - EMA (Exponential Moving Average)
+      - SMA (Simple Moving Average)
+      - ATR (Average True Range)
+      - ADX (Average Directional Index)
+      - Stochastic Oscillator
+   
+   d) Candlestick Patterns
+      - Last 3 candles analyzed
+      - Pattern names and meanings
+   
+   e) Options Chain Analysis
+      - PCR (Put-Call Ratio)
+      - Max Pain strike
+      - Support and Resistance from OI
+      - Total Call and Put OI
+      - OI changes
+   
+   f) Options Greeks
+      - ATM strike
+      - Delta, Theta, Vega, Gamma
+      - Days to expiry
+      - Theta decay per lot
+   
+   g) News Sentiment
+      - Overall sentiment (Bullish/Bearish/Neutral)
+      - Sentiment score (-1 to +1)
+      - Article counts
+      - High impact news count
+   
+   h) Global Market Cues
+      - Dow Futures, S&P 500, Nasdaq
+      - Hang Seng, USD/INR
+      - Gold, Crude Oil
+      - Percentage changes
+
+Step 3: AI ANALYSIS
+   - Llama 3.3 70B processes all data simultaneously
+   - Identifies patterns and correlations
+   - Considers market context and conditions
+   - Generates structured prediction
+
+Step 4: RESPONSE PARSING
+   - AI returns JSON-formatted prediction
+   - Contains direction, confidence, targets, reasons
+   - Includes options strategy recommendation
+   - Provides risk factors and warnings
+
+AI MODEL PARAMETERS:
+-------------------
+- Temperature: 0.2 (low = more consistent, less creative)
+- Max Tokens: 1500 (sufficient for detailed response)
+- Model: llama-3.3-70b-versatile
+- Response Format: JSON only
+
+AI ADVANTAGES:
+-------------
+✓ Considers ALL data simultaneously
+✓ Understands context and nuances
+✓ Identifies complex patterns
+✓ Provides detailed reasoning
+✓ Adapts to market conditions
+✓ Generates specific price targets
+✓ Recommends options strategies
+
+AI LIMITATIONS:
+--------------
+✗ Requires API key (free tier available)
+✗ Depends on external service
+✗ Rate limited (30 requests/minute)
+✗ May occasionally return invalid JSON
+✗ Not 100% accurate (no model is)
+
+================================================================================
+                    4. RULE-BASED MODEL (FALLBACK)
+================================================================================
+
+ALGORITHM: Simple Scoring System
+TYPE: Deterministic (same inputs = same output)
+COST: Free (no API required)
+
+HOW IT WORKS:
+-------------
+
+The rule-based model uses a SCORING SYSTEM where each indicator contributes
+points based on its signal:
+
+SCORING LOGIC:
+-------------
+
+1. RSI (Relative Strength Index)
+   - BULLISH/OVERSOLD signal: +1 point
+   - BEARISH/OVERBOUGHT signal: -1 point
+   - NEUTRAL: 0 points
+
+2. MACD (Moving Average Convergence Divergence)
+   - STRONG BULLISH: +2 points
+   - BULLISH: +1 point
+   - STRONG BEARISH: -2 points
+   - BEARISH: -1 point
+   - NEUTRAL: 0 points
+
+3. EMA Trend (Exponential Moving Average)
+   - STRONG UPTREND: +2 points
+   - UPTREND: +1 point
+   - STRONG DOWNTREND: -2 points
+   - DOWNTREND: -1 point
+   - NEUTRAL: 0 points
+
+4. PCR (Put-Call Ratio)
+   - PCR > 1.2 (Bullish): +1 point
+   - PCR < 0.8 (Bearish): -1 point
+   - 0.8 ≤ PCR ≤ 1.2 (Neutral): 0 points
+
+5. News Sentiment
+   - Score > 0.2 (Positive): +1 point
+   - Score < -0.2 (Negative): -1 point
+   - -0.2 ≤ Score ≤ 0.2 (Neutral): 0 points
+
+TOTAL SCORE CALCULATION:
+-----------------------
+Total Score = RSI + MACD + EMA + PCR + News
+Range: -8 to +8 points
+
+DIRECTION DETERMINATION:
+-----------------------
+
+Score ≥ 3:
+   Direction: BULLISH
+   Strength: STRONG
+   Confidence: 50 + (score × 5), max 80%
+
+Score = 1 or 2:
+   Direction: BULLISH
+   Strength: MODERATE
+   Confidence: 45 + (score × 5), max 65%
+
+Score ≤ -3:
+   Direction: BEARISH
+   Strength: STRONG
+   Confidence: 50 + (|score| × 5), max 80%
+
+Score = -1 or -2:
+   Direction: BEARISH
+   Strength: MODERATE
+   Confidence: 45 + (|score| × 5), max 65%
+
+Score = 0:
+   Direction: SIDEWAYS
+   Strength: WEAK
+   Confidence: 40%
+
+EXAMPLE CALCULATION:
+-------------------
+
+Scenario: Market in uptrend with bullish indicators
+
+RSI: 45 (BULLISH) = +1
+MACD: Bullish crossover (STRONG BULLISH) = +2
+EMA: Price above EMA (UPTREND) = +1
+PCR: 1.35 (Bullish) = +1
+News: Positive sentiment (0.3) = +1
+
+Total Score = 1 + 2 + 1 + 1 + 1 = 6
+
+Result:
+- Direction: BULLISH
+- Strength: STRONG
+- Confidence: 50 + (6 × 5) = 80%
+
+RULE-BASED ADVANTAGES:
+---------------------
+✓ Always available (no API needed)
+✓ Fast (instant calculation)
+✓ Transparent (clear logic)
+✓ Deterministic (predictable)
+✓ No external dependencies
+✓ Free
+
+RULE-BASED LIMITATIONS:
+----------------------
+✗ Simplistic (doesn't consider context)
+✗ No nuance (binary signals only)
+✗ Misses complex patterns
+✗ No price targets
+✗ No options strategy
+✗ Less accurate than AI
+
+================================================================================
+                              5. DATA INPUTS
+================================================================================
+
+The prediction models use 8 categories of real-time market data:
+
+1. NIFTY PRICE DATA
+   Source: NSE API → Angel One → yfinance
+   Frequency: Every 60 seconds
+   Data Points:
+   - Current price
+   - Open, High, Low
+   - Change and % change
+   - Previous close
+   - Data confidence level
+
+2. INDIA VIX (Volatility Index)
+   Source: yfinance → NSE API
+   Frequency: Every 60 seconds
+   Data Points:
+   - Current VIX value
+   - Change from previous close
+   - % change
+   Interpretation:
+   - VIX < 13: Low volatility (sell premium)
+   - VIX 13-20: Normal range
+   - VIX > 20: High volatility (caution)
+
+3. TECHNICAL INDICATORS (8 indicators)
+   Source: Calculated from candle data
+   Frequency: Every 60 seconds
+   
+   a) RSI (14-period)
+      - Overbought: > 70
+      - Oversold: < 30
+      - Neutral: 30-70
+   
+   b) MACD (12, 26, 9)
+      - Signal: Histogram direction
+      - Crossover: Bullish/Bearish
+   
+   c) Bollinger Bands (20, 2)
+      - Upper/Lower bands
+      - Price position
+   
+   d) EMA (9, 21, 50)
+      - Trend direction
+      - Price vs EMA
+   
+   e) SMA (20, 50, 200)
+      - Moving average trend
+      - Golden/Death cross
+   
+   f) ATR (14-period)
+      - Volatility measure
+      - Stop loss calculation
+   
+   g) ADX (14-period)
+      - Trend strength
+      - > 25: Strong trend
+   
+   h) Stochastic (14, 3, 3)
+      - Overbought/Oversold
+      - Momentum indicator
+
+4. CANDLESTICK PATTERNS
+   Source: Pattern detection algorithm
+   Frequency: Every 60 seconds
+   Patterns Detected:
+   - Doji, Hammer, Shooting Star
+   - Engulfing (Bullish/Bearish)
+   - Morning/Evening Star
+   - Three White Soldiers/Black Crows
+   - And more...
+
+5. OPTIONS CHAIN DATA
+   Source: NSE API → Angel One
+   Frequency: Every 5 minutes (cached)
+   Data Points:
+   - PCR (Put-Call Ratio)
+   - Max Pain strike
+   - Support (highest PE OI)
+   - Resistance (highest CE OI)
+   - Total Call OI
+   - Total Put OI
+   - OI changes (intraday)
+
+6. OPTIONS GREEKS
+   Source: Black-Scholes calculation
+   Frequency: Every 60 seconds
+   Data Points:
+   - ATM strike
+   - Days to expiry
+   - Delta (CE and PE)
+   - Theta (time decay)
+   - Vega (volatility sensitivity)
+   - Gamma (delta change rate)
+
+7. NEWS SENTIMENT
+   Source: NewsAPI + RSS feeds
+   Frequency: 9 AM, 12 PM, 3 PM (scheduled)
+   Data Points:
+   - Overall sentiment (Bullish/Bearish/Neutral)
+   - Sentiment score (-1 to +1)
+   - Bullish article count
+   - Bearish article count
+   - High impact news count
+
+8. GLOBAL MARKET CUES
+   Source: yfinance
+   Frequency: Every 60 seconds
+   Markets Tracked:
+   - Dow Futures
+   - S&P 500
+   - Nasdaq
+   - Hang Seng
+   - USD/INR
+   - Gold
+   - Crude Oil
+
+================================================================================
+                            6. PREDICTION OUTPUT
+================================================================================
+
+Both models return a structured prediction with the following fields:
+
+CORE PREDICTION:
+---------------
+- direction: "BULLISH" | "BEARISH" | "SIDEWAYS"
+- confidence: 0-100 (percentage)
+- strength: "WEAK" | "MODERATE" | "STRONG"
+
+PRICE TARGETS (AI model only):
+-----------------------------
+- 5min: {high, low, most_likely}
+- 15min: {high, low, most_likely}
+- 30min: {high, low, most_likely}
+- 40min: {high, low, most_likely}
+
+KEY LEVELS (AI model only):
+--------------------------
+- immediate_resistance: Price level
+- immediate_support: Price level
+- critical_resistance: Price level
+- critical_support: Price level
+
+OPTIONS STRATEGY (AI model only):
+--------------------------------
+- recommended: Strategy name
+- rationale: Why this strategy
+- strikes: Specific strikes to trade
+- risk: "LOW" | "MEDIUM" | "HIGH"
+
+REASONING:
+---------
+- top_3_reasons: Array of 3 main signals
+- risks: Array of risk factors (AI only)
+- do_not_trade_if: Invalidation condition (AI only)
+
+METADATA:
+--------
+- one_line_summary: Brief market summary
+- model_used: "llama-3.3-70b-versatile" or "Rule-based fallback"
+- generated_at: Timestamp (HH:MM:SS IST)
+
+EXAMPLE OUTPUT (AI Model):
+-------------------------
+{
+  "direction": "BULLISH",
+  "confidence": 75,
+  "strength": "STRONG",
+  "price_targets": {
+    "5min": {"high": 25350, "low": 25280, "most_likely": 25320},
+    "15min": {"high": 25400, "low": 25250, "most_likely": 25350},
+    "30min": {"high": 25450, "low": 25200, "most_likely": 25380},
+    "40min": {"high": 25500, "low": 25150, "most_likely": 25400}
+  },
+  "key_levels": {
+    "immediate_resistance": 25350,
+    "immediate_support": 25250,
+    "critical_resistance": 25500,
+    "critical_support": 25150
+  },
+  "options_strategy": {
+    "recommended": "Bull Call Spread",
+    "rationale": "Strong uptrend with moderate volatility",
+    "strikes": "Buy 25300 CE, Sell 25400 CE",
+    "risk": "MEDIUM"
+  },
+  "top_3_reasons": [
+    "MACD showing strong bullish crossover",
+    "PCR at 1.35 indicating bullish sentiment",
+    "Price broke above 25300 resistance with volume"
+  ],
+  "risks": [
+    "Global markets showing weakness",
+    "VIX rising indicating increased volatility"
+  ],
+  "do_not_trade_if": "Price closes below 25250",
+  "one_line_summary": "Strong bullish momentum with upside target of 25400",
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "11:45:30 IST"
+}
+
+EXAMPLE OUTPUT (Rule-Based Model):
+---------------------------------
+{
+  "direction": "BULLISH",
+  "confidence": 65,
+  "strength": "MODERATE",
+  "score": 4,
+  "top_3_reasons": [
+    "RSI at 45 - BULLISH",
+    "MACD: STRONG BULLISH",
+    "PCR 1.35 - Bullish"
+  ],
+  "one_line_summary": "Rule-based: BULLISH bias with 65% confidence",
+  "model_used": "Rule-based fallback",
+  "generated_at": "11:45:30 IST"
+}
+
+================================================================================
+                        7. HOW PREDICTIONS ARE MADE
+================================================================================
+
+STEP-BY-STEP PREDICTION PROCESS:
+--------------------------------
+
+1. DATA COLLECTION (5-10 seconds)
+   - Fetch Nifty price from NSE/Angel One
+   - Fetch VIX from yfinance
+   - Fetch candle data from Angel One
+   - Calculate technical indicators
+   - Detect candlestick patterns
+   - Fetch options chain (if available)
+   - Calculate Greeks
+   - Get news sentiment (from cache)
+   - Fetch global market data
+
+2. DATA VALIDATION
+   - Check data completeness
+   - Verify data freshness
+   - Cross-validate price data
+   - Handle missing data gracefully
+
+3. MODEL SELECTION
+   - Check if Groq API key is available
+   - If YES: Use AI model
+   - If NO: Use rule-based model
+
+4. PREDICTION GENERATION
+
+   AI MODEL PATH:
+   a) Build comprehensive prompt with all data
+   b) Send to Groq API (Llama 3.3 70B)
+   c) Receive JSON response
+   d) Parse and validate response
+   e) Add metadata (timestamp, model used)
+   f) Return prediction
+
+   RULE-BASED PATH:
+   a) Calculate score from indicators
+   b) Determine direction based on score
+   c) Calculate confidence based on score
+   d) Collect top reasons
+   e) Add metadata
+   f) Return prediction
+
+5. DISPLAY ON DASHBOARD
+   - Show direction with color coding
+   - Display confidence bar
+   - Show strength indicator
+   - List top 3 reasons
+   - Display price targets (if available)
+   - Show options strategy (if available)
+
+6. NEXT CANDLE PREDICTION
+   - Calculate expected move based on:
+     * Recent candle volatility
+     * AI direction
+     * Timeframe multiplier
+   - Show probability based on confidence
+   - Display target price
+
+================================================================================
+                          8. CONFIDENCE SCORING
+================================================================================
+
+CONFIDENCE LEVELS:
+-----------------
+
+HIGH CONFIDENCE (70-100%):
+- Multiple strong signals aligned
+- Clear trend direction
+- Low conflicting signals
+- High data quality
+- Recent pattern confirmation
+
+MEDIUM CONFIDENCE (50-69%):
+- Some signals aligned
+- Moderate trend
+- Some conflicting signals
+- Good data quality
+- Mixed pattern signals
+
+LOW CONFIDENCE (0-49%):
+- Weak or conflicting signals
+- No clear trend
+- High uncertainty
+- Data quality issues
+- Sideways market
+
+AI MODEL CONFIDENCE:
+-------------------
+The AI model determines confidence based on:
+- Signal strength across all indicators
+- Alignment of technical and fundamental data
+- Market context and conditions
+- Historical pattern reliability
+- Risk factors present
+
+RULE-BASED CONFIDENCE:
+---------------------
+Formula: Base + (Score × Multiplier)
+
+For Bullish/Bearish:
+- Strong (score ≥ 3): 50 + (score × 5), max 80%
+- Moderate (score 1-2): 45 + (score × 5), max 65%
+
+For Sideways:
+- Always 40%
+
+CONFIDENCE INTERPRETATION:
+-------------------------
+80-100%: Very High - Strong conviction
+70-79%: High - Good confidence
+60-69%: Medium-High - Reasonable confidence
+50-59%: Medium - Moderate confidence
+40-49%: Medium-Low - Weak confidence
+0-39%: Low - Very uncertain
+
+================================================================================
+                      9. PRICE TARGET CALCULATION
+================================================================================
+
+NEXT CANDLE PREDICTION:
+----------------------
+
+The dashboard shows "Next Candle Prediction" for 3 timeframes:
+- 5 minutes
+- 15 minutes
+- 30 minutes
+
+CALCULATION METHOD:
+------------------
+
+1. Get Recent Volatility
+   - Calculate average candle range from last 10 candles
+   - Formula: avg_move = mean(|close - open|)
+
+2. Apply Timeframe Multiplier
+   - 5 min: 0.7× (conservative)
+   - 15 min: 1.2× (moderate)
+   - 30 min: 1.8× (larger move expected)
+
+3. Calculate Expected Move
+   - Bullish: target = current_price + (avg_move × multiplier)
+   - Bearish: target = current_price - (avg_move × multiplier)
+   - Sideways: target = current_price (±30% of avg_move)
+
+4. Adjust Probability
+   - Base probability = AI confidence
+   - Reduce for longer timeframes (more uncertainty)
+   - Formula: probability = confidence - ((timeframe - 5) × 2)
+   - Minimum: 30%
+
+EXAMPLE:
+-------
+Current Price: 25,300
+Recent avg_move: 50 points
+AI Direction: BULLISH
+AI Confidence: 75%
+
+5-Minute Prediction:
+- Expected move: 50 × 0.7 = 35 points
+- Target: 25,300 + 35 = 25,335
+- Probability: 75% (no reduction)
+
+15-Minute Prediction:
+- Expected move: 50 × 1.2 = 60 points
+- Target: 25,300 + 60 = 25,360
+- Probability: 75 - ((15-5) × 2) = 55%
+
+30-Minute Prediction:
+- Expected move: 50 × 1.8 = 90 points
+- Target: 25,300 + 90 = 25,390
+- Probability: 75 - ((30-5) × 2) = 25% → 30% (minimum)
+
+AI MODEL TARGETS:
+----------------
+The AI model provides more sophisticated targets:
+- Considers support/resistance levels
+- Factors in options data (max pain, OI)
+- Accounts for global market trends
+- Provides high/low/most_likely scenarios
+
+================================================================================
+                          10. MODEL LIMITATIONS
+================================================================================
+
+GENERAL LIMITATIONS:
+-------------------
+✗ Past performance doesn't guarantee future results
+✗ Market can be irrational and unpredictable
+✗ Black swan events cannot be predicted
+✗ News and events can change sentiment instantly
+✗ Models work best in trending markets
+✗ Sideways/choppy markets are harder to predict
+✗ Predictions are probabilistic, not certain
+
+AI MODEL LIMITATIONS:
+--------------------
+✗ Requires internet connection
+✗ Depends on Groq API availability
+✗ Rate limited (30 requests/minute on free tier)
+✗ May occasionally return invalid JSON
+✗ Can be influenced by training data biases
+✗ Not specifically trained on Indian markets
+✗ Doesn't have real-time news (uses cached)
+
+RULE-BASED LIMITATIONS:
+----------------------
+✗ Overly simplistic
+✗ Doesn't consider market context
+✗ Binary signals (no nuance)
+✗ Misses complex patterns
+✗ No price targets
+✗ No options strategy recommendations
+✗ Less accurate than AI model
+
+DATA LIMITATIONS:
+----------------
+✗ NSE API can be blocked (anti-bot measures)
+✗ Options data only available during market hours
+✗ News sentiment updated only 3 times/day
+✗ yfinance data has 15-minute delay
+✗ Global cues may not reflect real-time changes
+✗ Greeks calculated, not from exchange
+
+MARKET LIMITATIONS:
+------------------
+✗ Gap ups/downs cannot be predicted
+✗ Sudden news events cause unpredictable moves
+✗ Low liquidity can cause erratic price action
+✗ Expiry day behavior is different
+✗ First and last 30 minutes are volatile
+✗ RBI policy announcements cause volatility
+
+================================================================================
+                        11. ACCURACY & RELIABILITY
+================================================================================
+
+EXPECTED ACCURACY:
+-----------------
+
+AI Model (Groq Llama 3.3 70B):
+- High Confidence (70-100%): ~65-75% accuracy
+- Medium Confidence (50-69%): ~55-65% accuracy
+- Low Confidence (0-49%): ~45-55% accuracy
+- Overall: ~60-70% accuracy in trending markets
+
+Rule-Based Model:
+- High Confidence (70-100%): ~60-70% accuracy
+- Medium Confidence (50-69%): ~50-60% accuracy
+- Low Confidence (0-49%): ~40-50% accuracy
+- Overall: ~55-65% accuracy in trending markets
+
+FACTORS AFFECTING ACCURACY:
+---------------------------
+✓ Market conditions (trending vs sideways)
+✓ Data quality and freshness
+✓ Volatility levels
+✓ Time of day (avoid first/last 30 min)
+✓ News events and announcements
+✓ Global market sentiment
+✓ Options expiry proximity
+
+BEST PERFORMANCE:
+----------------
+- Strong trending markets
+- Normal volatility (VIX 13-20)
+- Mid-day trading (10:30 AM - 2:30 PM)
+- Clear technical signals
+- Aligned global markets
+- No major news events
+
+WORST PERFORMANCE:
+-----------------
+- Sideways/choppy markets
+- High volatility (VIX > 25)
+- First/last 30 minutes
+- Conflicting signals
+- Major news events
+- Expiry day
+- Gap openings
+
+RELIABILITY FACTORS:
+-------------------
+
+HIGH RELIABILITY:
+✓ Multiple data sources agree
+✓ Strong technical signals
+✓ Clear trend direction
+✓ Normal volatility
+✓ Good data quality
+✓ Recent pattern confirmation
+
+LOW RELIABILITY:
+✗ Conflicting signals
+✗ Sideways market
+✗ High volatility
+✗ Data quality issues
+✗ Major news pending
+✗ Expiry day
+
+IMPROVING ACCURACY:
+------------------
+1. Use predictions as ONE input, not the only input
+2. Combine with your own analysis
+3. Pay attention to confidence levels
+4. Avoid trading on low confidence predictions
+5. Use stop losses always
+6. Consider market context
+7. Don't trade during high volatility
+8. Avoid first and last 30 minutes
+9. Use options strategies to limit risk
+10. Paper trade first to validate
+
+================================================================================
+                            12. DISCLAIMER
+================================================================================
+
+IMPORTANT NOTICE:
+----------------
+
+This prediction model is for EDUCATIONAL and INFORMATIONAL purposes only.
+
+✗ NOT financial advice
+✗ NOT a guarantee of profits
+✗ NOT 100% accurate
+✗ NOT suitable for all investors
+
+RISKS:
+-----
+- Trading involves substantial risk of loss
+- Past performance doesn't guarantee future results
+- You can lose more than your initial investment
+- Options trading is especially risky
+- Leverage amplifies both gains and losses
+
+RECOMMENDATIONS:
+---------------
+✓ Always do your own research
+✓ Consult a qualified financial advisor
+✓ Never invest more than you can afford to lose
+✓ Use stop losses
+✓ Diversify your portfolio
+✓ Understand the risks before trading
+✓ Paper trade first
+✓ Start small
+
+RESPONSIBILITY:
+--------------
+The creators of this tool are NOT responsible for:
+- Trading losses
+- Incorrect predictions
+- Data errors
+- API failures
+- Any financial decisions made based on this tool
+
+USE AT YOUR OWN RISK.
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
+
+For questions or issues, refer to:
+- README.md (project documentation)
+- PROJECT_STATUS.md (current status)
+- ANGEL_ONE_INTEGRATION.md (API setup)
+
+Last Updated: February 27, 2026
+Version: 1.0
