@@ -1,0 +1,112 @@
+═══════════════════════════════════════════════════════════════════════
+                    QUICK REFERENCE CARD
+                  Data Source Filtering
+═══════════════════════════════════════════════════════════════════════
+
+WHAT IT DOES
+───────────────────────────────────────────────────────────────────────
+• Tracks where each data point comes from (NSE, Angel One, or yfinance)
+• Only logs predictions when using real-time data (NSE or Angel One)
+• Skips logging when using delayed data (yfinance - 15 min delay)
+• Shows visual indicator in dashboard so you know logging status
+
+WHY IT MATTERS
+───────────────────────────────────────────────────────────────────────
+• Training ML model on delayed data = bad predictions
+• Training ML model on real-time data = good predictions
+• Quality over quantity: 300 real-time predictions > 500 mixed
+
+VISUAL INDICATOR (Dashboard Banner)
+───────────────────────────────────────────────────────────────────────
+
+✅ LOGGING
+• Using real-time data (NSE or Angel One)
+• Market is open
+• Predictions ARE being logged
+• Everything is working correctly!
+
+⏸ PAUSED
+• Using real-time data (NSE or Angel One)
+• Market is closed
+• Predictions are NOT being logged (normal)
+• Will resume when market opens
+
+🚫 NOT LOGGING
+• Using delayed data (yfinance)
+• Market might be open
+• Predictions are NOT being logged
+• FIX: Check NSE API or Angel One credentials
+
+DATA SOURCE PRIORITY
+───────────────────────────────────────────────────────────────────────
+1. NSE API (Primary) → Real-time, 0 delay → LOGS ✅
+2. Angel One (Backup) → Real-time, 0 delay → LOGS ✅
+3. yfinance (Fallback) → 15 min delay → SKIPS ❌
+
+QUICK CHECKS
+───────────────────────────────────────────────────────────────────────
+
+Check 1: Dashboard Banner
+• Look at top of dashboard
+• Should show "✅ LOGGING" during market hours
+
+Check 2: Terminal Logs
+• Look for: "Logged prediction: BULLISH at 25000.5 (source: NSE API)"
+• Should NOT see: "Skipping log - using delayed data source"
+
+Check 3: Run Verification
+python quick_verify_logger.py
+• Should show: "✅ No delayed data logged"
+• Should show: Data source distribution (NSE/Angel One only)
+
+Check 4: Check CSV
+import pandas as pd
+df = pd.read_csv('prediction_log.csv')
+print(df['data_source'].value_counts())
+# Should see only NSE API or Angel One, NO yfinance
+
+COMMANDS
+───────────────────────────────────────────────────────────────────────
+
+Run Dashboard:
+streamlit run app.py
+
+Run Verification:
+python quick_verify_logger.py
+
+Run Tests:
+python test_data_source_filtering.py
+
+Check CSV Columns:
+python -c "import pandas as pd; print(len(pd.read_csv('prediction_log.csv').columns))"
+# Should output: 19
+
+Check Data Sources:
+python -c "import pandas as pd; print(pd.read_csv('prediction_log.csv')['data_source'].value_counts())"
+# Should show only NSE API or Angel One
+
+TROUBLESHOOTING
+───────────────────────────────────────────────────────────────────────
+
+Problem: "🚫 NOT LOGGING" during market hours
+Fix: Check NSE API and Angel One credentials
+
+Problem: CSV has yfinance entries
+Fix: Run python test_data_source_filtering.py (should never happen!)
+
+Problem: No predictions being logged
+Fix: Check if dashboard is running and market is open
+
+FILES TO READ
+───────────────────────────────────────────────────────────────────────
+• VISUAL_INDICATOR_GUIDE.txt - Detailed visual guide
+• DATA_SOURCE_FILTERING.md - Technical documentation
+• TASK_COMPLETE_DATA_SOURCE_FILTERING.txt - Implementation summary
+
+EXPECTED TIMELINE
+───────────────────────────────────────────────────────────────────────
+Day 1-7: Collect 300+ real-time predictions
+Day 7: Train XGBoost model
+Result: Better predictions, higher win rate!
+
+═══════════════════════════════════════════════════════════════════════

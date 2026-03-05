@@ -97,6 +97,37 @@ PREDICTION_HORIZONS = [5, 15, 30, 40]   # minutes
 CONFIDENCE_THRESHOLD_HIGH = 70           # % above which we show strong signal
 CONFIDENCE_THRESHOLD_MED  = 50           # % above which we show moderate signal
 
+# ── RISK MANAGEMENT ───────────────────────────────────────────────────────────
+RISK_REWARD_RATIO = 1.5                  # Take profit at 1.5x stop loss
+STOP_LOSS_PERCENT = 0.5                  # 0.5% stop loss (adjust based on volatility)
+TAKE_PROFIT_PERCENT = 0.75               # 0.75% take profit (1.5x stop loss)
+MAX_POSITION_SIZE = 0.1                  # Max 10% of capital per trade
+MIN_CONFIDENCE_TO_TRADE = 60             # Minimum confidence to enter trade
+
+# Entry rules
+MAX_SLIPPAGE_PERCENT = 0.1               # Max 0.1% price movement from signal (don't chase)
+ENTRY_ORDER_TYPE = "MARKET"              # Use market orders for immediate execution
+# Note: If price moves >0.1% from signal price, skip the trade
+# This prevents chasing and ensures good entry prices
+
+# ATR-based risk management (for future implementation)
+ATR_MIN_PERCENT = 0.3                    # Minimum stop loss (prevents too-tight stops)
+ATR_MAX_PERCENT = 1.5                    # Maximum stop loss (prevents wild stops on volatile days)
+# Note: These caps protect against extreme volatility during:
+# - Budget announcements
+# - RBI policy decisions
+# - Global market crashes
+# - Unexpected news events
+
+# ── TIME-OF-DAY FILTERS ──────────────────────────────────────────────────────
+# Disable predictions during high-volatility periods (opening & closing)
+DISABLE_OPENING_TRADES = True            # Disable 9:15-9:45 (opening volatility)
+DISABLE_CLOSING_TRADES = True            # Disable 3:00-3:30 (closing volatility)
+OPENING_BLACKOUT_START = (9, 15)         # (hour, minute)
+OPENING_BLACKOUT_END = (9, 45)           # (hour, minute)
+CLOSING_BLACKOUT_START = (15, 0)         # (hour, minute)
+CLOSING_BLACKOUT_END = (15, 30)          # (hour, minute)
+
 # ── VIX INTERPRETATION ────────────────────────────────────────────────────────
 VIX_LOW    = 13    # Below this: sell premium
 VIX_HIGH   = 20   # Above this: buy options / caution

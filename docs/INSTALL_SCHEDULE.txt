@@ -1,0 +1,23 @@
+INSTALL SCHEDULE LIBRARY
+========================
+
+The standalone logger now uses the 'schedule' library for precise 60-second intervals.
+
+To install:
+-----------
+
+Option 1 - Install just schedule:
+    pip install schedule
+
+Option 2 - Install all requirements:
+    pip install -r requirements.txt
+
+Verify installation:
+--------------------
+    python -c "import schedule; print('Schedule installed:', schedule.__version__)"
+
+Then restart the standalone logger:
+------------------------------------
+    python standalone_logger.py
+
+You should see logs at exactly 60-second intervals!

@@ -47,6 +47,13 @@ logs/
 *.csv
 !instruments_nifty_options.csv
 
+# Historical data folders (not needed for live trading)
+kaggle/
+archive_historical_experiments/
+
+# Conda environment (local only)
+.conda/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -59,3 +66,6 @@ desktop.ini
 *.tmp
 *.bak
 *.cache
+
+# Model files (optional - large files)
+*.pkl

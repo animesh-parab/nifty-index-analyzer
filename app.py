@@ -22,6 +22,10 @@ from news_fetcher_scheduled import get_all_news  # Scheduled fetching (9 AM, 12 
 from greeks import get_atm_greeks
 # Using Dual-AI Consensus (Groq + Gemini) for validated predictions
 from ai_engine_consensus import get_consensus_prediction, get_rule_based_prediction
+# Enhanced prediction engine with new indicator scoring
+from enhanced_prediction_engine import get_enhanced_prediction, initialize_previous_day_levels
+# Prediction logging for XGBoost training
+from prediction_logger import log_prediction
 # Price alerts with browser notifications
 from price_alerts import (
     add_alert, remove_alert, get_active_alerts, 
@@ -625,6 +629,10 @@ def main():
     # Indicator summary from candles
     indicator_summary = get_indicator_summary(df_candles) if not df_candles.empty else {}
     patterns = detect_candlestick_patterns(df_candles) if not df_candles.empty else {}
+    
+    # Initialize previous day levels on first run
+    if not df_candles.empty:
+        initialize_previous_day_levels(df_candles)
 
     # ── PRICE ALERTS CHECK ────────────────────────────────────────────────────
     current_price = price_data.get('price', 0)
@@ -703,34 +711,216 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
+    # ── TRADE SIGNAL SCANNER ──────────────────────────────────────────────────
+    # Scan for CALL/PUT setups every 60 seconds during active hours
+    trade_signal = {"signal": "NO_TRADE", "reason": "Not scanned"}
+    
+    if not df_candles.empty and market_status == "MARKET OPEN":
+        from trade_signal_scanner import scan_for_signals
+        try:
+            trade_signal = scan_for_signals(df_candles)
+            
+            # Display trade signal alert if BUY or SELL
+            if trade_signal['signal'] in ['BUY', 'SELL']:
+                signal_type = trade_signal['signal']
+                setup_type = trade_signal.get('setup_type', 'UNKNOWN')
+                
+                # Color scheme
+                if signal_type == 'BUY':
+                    bg_color = theme['green_bg']
+                    border_color = theme['green']
+                    text_color = theme['green']
+                    icon = "🟢"
+                    action_text = "CALL SETUP"
+                else:  # SELL
+                    bg_color = theme['red_bg']
+                    border_color = theme['red']
+                    text_color = theme['red']
+                    icon = "🔴"
+                    action_text = "PUT SETUP"
+                
+                # Large alert box
+                st.markdown(f"""
+                <div style="background: {bg_color}; 
+                            border: 3px solid {border_color}; 
+                            border-radius: 16px; 
+                            padding: 24px; 
+                            margin-bottom: 20px; 
+                            box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <div style="font-size: 3rem;">{icon}</div>
+                        <div>
+                            <div style="font-size: 1.8rem; font-weight: 700; color: {text_color}; 
+                                        font-family: 'Space Mono', monospace; letter-spacing: -0.5px;">
+                                {action_text} DETECTED
+                            </div>
+                            <div style="font-size: 0.9rem; color: {theme['text_secondary']}; margin-top: 4px;">
+                                {setup_type} • Confluence: {trade_signal.get('confluence_score', 0)}/7 • 
+                                Time: {trade_signal.get('time', 'N/A')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px;">
+                        <div style="background: {theme['bg_tertiary']}; border-radius: 10px; padding: 14px;">
+                            <div style="font-size: 0.7rem; color: {theme['text_muted']}; 
+                                        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                ENTRY
+                            </div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: {text_color}; 
+                                        font-family: 'Space Mono', monospace;">
+                                ₹{trade_signal.get('entry', 0):,.2f}
+                            </div>
+                        </div>
+                        
+                        <div style="background: {theme['bg_tertiary']}; border-radius: 10px; padding: 14px;">
+                            <div style="font-size: 0.7rem; color: {theme['text_muted']}; 
+                                        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                STOP LOSS
+                            </div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: {theme['red']}; 
+                                        font-family: 'Space Mono', monospace;">
+                                ₹{trade_signal.get('stop_loss', 0):,.2f}
+                            </div>
+                            <div style="font-size: 0.65rem; color: {theme['text_muted']}; margin-top: 4px;">
+                                Risk: {trade_signal.get('risk', 0):.2f} pts
+                            </div>
+                        </div>
+                        
+                        <div style="background: {theme['bg_tertiary']}; border-radius: 10px; padding: 14px;">
+                            <div style="font-size: 0.7rem; color: {theme['text_muted']}; 
+                                        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                RISK:REWARD
+                            </div>
+                            <div style="font-size: 1.6rem; font-weight: 700; color: {theme['green']}; 
+                                        font-family: 'Space Mono', monospace;">
+                                1:{trade_signal.get('risk_reward_ratio', 0):.2f}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px;">
+                        <div style="background: {theme['bg_tertiary']}; border-radius: 10px; padding: 14px;">
+                            <div style="font-size: 0.7rem; color: {theme['text_muted']}; 
+                                        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                TARGET 1
+                            </div>
+                            <div style="font-size: 1.4rem; font-weight: 700; color: {theme['green']}; 
+                                        font-family: 'Space Mono', monospace;">
+                                ₹{trade_signal.get('target_1', 0):,.2f}
+                            </div>
+                        </div>
+                        
+                        <div style="background: {theme['bg_tertiary']}; border-radius: 10px; padding: 14px;">
+                            <div style="font-size: 0.7rem; color: {theme['text_muted']}; 
+                                        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                TARGET 2
+                            </div>
+                            <div style="font-size: 1.4rem; font-weight: 700; color: {theme['green']}; 
+                                        font-family: 'Space Mono', monospace;">
+                                ₹{trade_signal.get('target_2', 0):,.2f}
+                            </div>
+                            <div style="font-size: 0.65rem; color: {theme['text_muted']}; margin-top: 4px;">
+                                Reward: {trade_signal.get('reward', 0):.2f} pts
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 16px; padding: 12px; background: {theme['bg_secondary']}; 
+                                border-radius: 8px; font-size: 0.75rem; color: {theme['text_secondary']};">
+                        <strong>Setup Details:</strong> 
+                        Position: {trade_signal.get('position_in_range', 0):.1%} of range • 
+                        RSI: {trade_signal.get('rsi', 0):.1f} • 
+                        Support: ₹{trade_signal.get('recent_low', 0):,.2f} • 
+                        Resistance: ₹{trade_signal.get('recent_high', 0):,.2f}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Also show toast notification
+                st.toast(f"{icon} {action_text} DETECTED at ₹{trade_signal.get('entry', 0):,.2f}", icon=icon)
+                
+        except Exception as e:
+            # Silently fail if scanner has issues
+            trade_signal = {"signal": "NO_TRADE", "reason": f"Scanner error: {str(e)}"}
+
     # Greeks
     greeks = {}
     if price_data.get("price", 0) > 0 and oi_data.get("expiry"):
         greeks = get_atm_greeks(price_data["price"], vix_data.get("vix", 15), oi_data.get("expiry", ""))
 
-    # AI Prediction (Dual-AI Consensus)
+    # AI Prediction (Enhanced Scoring + Dual-AI Consensus)
     prediction = {}
     try:
-        from config import GROQ_API_KEY, GEMINI_API_KEY
-        if GROQ_API_KEY or GEMINI_API_KEY:
-            prediction = get_consensus_prediction(
-                price_data, indicator_summary, oi_data,
-                vix_data, news_data.get("sentiment", {}),
-                greeks, global_cues, patterns
-            )
-            # Check if we need fallback
-            if prediction.get("use_fallback"):
-                prediction = get_rule_based_prediction(
-                    indicator_summary, oi_data, vix_data, news_data.get("sentiment", {})
-                )
+        # Try enhanced prediction engine first (with time filter)
+        enhanced_pred = get_enhanced_prediction(
+            price_data, indicator_summary, df_candles,
+            oi_data, vix_data, news_data.get("sentiment", {})
+        )
+        
+        # If time filter blocks prediction, skip entirely
+        if enhanced_pred is None:
+            prediction = {
+                "direction": "BLOCKED",
+                "confidence": 0,
+                "strength": "N/A",
+                "consensus": "TIME_FILTER",
+                "agreement": "DISABLED_ZONE",
+                "top_3_reasons": ["Prediction disabled during high volatility period"],
+                "one_line_summary": "Time filter: Prediction disabled (before 9:30 or after 3:00 PM)",
+                "model_used": "Time Filter",
+                "generated_at": datetime.now(IST).strftime("%H:%M:%S IST")
+            }
         else:
+            # Use enhanced prediction
+            prediction = enhanced_pred
+            
+    except Exception as e:
+        # Fallback to rule-based if enhanced fails
+        try:
             prediction = get_rule_based_prediction(
                 indicator_summary, oi_data, vix_data, news_data.get("sentiment", {})
             )
-    except Exception as e:
-        prediction = get_rule_based_prediction(
-            indicator_summary, oi_data, vix_data, news_data.get("sentiment", {})
-        )
+        except Exception as e2:
+            prediction = {
+                "direction": "ERROR",
+                "confidence": 0,
+                "strength": "N/A",
+                "consensus": "ERROR",
+                "agreement": "FALLBACK",
+                "top_3_reasons": [str(e)[:100]],
+                "one_line_summary": f"Error: {str(e)[:50]}",
+                "model_used": "Error Handler",
+                "generated_at": datetime.now(IST).strftime("%H:%M:%S IST")
+            }
+
+    # Log prediction for XGBoost training (only during market hours with real-time data)
+    # Skip logging if prediction was blocked by time filter
+    if prediction and price_data.get("price", 0) > 0 and prediction.get("direction") != "BLOCKED":
+        try:
+            # Get last candle for raw indicator values
+            last_candle = df_candles.iloc[-1] if not df_candles.empty else {}
+            
+            # Prepare indicator values for logging (PCR removed - APIs unreliable)
+            indicator_values = {
+                'rsi_14': indicator_summary.get('RSI', {}).get('value', 0),
+                'macd_value': indicator_summary.get('MACD', {}).get('value', 0),
+                'macd_signal': last_candle.get('macd_signal', 0),  # Get numerical value from dataframe
+                'ema_9': indicator_summary.get('EMA_Trend', {}).get('ema_9', 0),
+                'ema_21': indicator_summary.get('EMA_Trend', {}).get('ema_21', 0),
+                'ema_50': indicator_summary.get('EMA_Trend', {}).get('ema_50', 0),
+                'bb_position': (last_candle.get('close', 0) - last_candle.get('bb_lower', 0)) / (last_candle.get('bb_upper', 0) - last_candle.get('bb_lower', 0)) if (last_candle.get('bb_upper', 0) - last_candle.get('bb_lower', 0)) > 0 else 0.5,
+                'atr_14': indicator_summary.get('ATR', {}).get('value', 0),
+                'vix': vix_data.get('vix', 15.0),
+                'us_market_change': global_cues.get('S&P 500', {}).get('pct_change', 0),
+                'data_source': price_data.get('source', 'Unknown')
+                # PCR removed - options APIs unreliable (NSE empty, Angel One failing)
+            }
+            
+            log_prediction(indicator_values, prediction, price_data.get("price", 0))
+        except Exception as log_error:
+            # Don't let logging errors break the dashboard
+            pass
 
     # ── ROW 1: PRICE + KEY METRICS ─────────────────────────────────────────────
     price = price_data.get("price", 0)
@@ -1376,13 +1566,26 @@ def main():
         if i < len(cols_global):
             with cols_global[i]:
                 val = data.get("pct_change", 0)
+                price = data.get("price", 0)
                 color = "#3fb950" if val >= 0 else "#f85149"
                 arrow = "▲" if val >= 0 else "▼"
+                
+                # Format price based on market type
+                if "USD/INR" in name or "INR" in name:
+                    price_str = f"₹{price:,.2f}"
+                elif "Gold" in name or "Crude" in name:
+                    price_str = f"${price:,.2f}"
+                else:
+                    price_str = f"${price:,.0f}"
+                
                 st.markdown(f"""
                 <div class="metric-card" style="padding:0.5rem;">
                     <div class="metric-label" style="font-size:0.68rem;">{name}</div>
                     <div style="font-size:0.85rem;color:{color};font-weight:700;font-family:'Space Mono',monospace;">
                         {arrow} {abs(val):.2f}%
+                    </div>
+                    <div style="font-size:0.65rem;color:#8b949e;margin-top:2px;">
+                        {price_str}
                     </div>
                 </div>
                 """, unsafe_allow_html=True)

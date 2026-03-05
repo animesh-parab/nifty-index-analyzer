@@ -1,0 +1,205 @@
+================================================================================
+CONFIGURATION LOCKED FOR MONTH 1
+================================================================================
+
+Date: March 2, 2026
+Status: Data Collection Phase (Weeks 1-4)
+
+================================================================================
+USER DECISION
+================================================================================
+
+"Agreed. Keep ATR defaults (1x and 1.5x) until XGBoost has 300+ samples. 
+Dynamic adjustment is a Month 2 feature."
+
+================================================================================
+LOCKED PARAMETERS (DO NOT CHANGE)
+================================================================================
+
+Risk Management:
+  ✅ Stop Loss: 0.5% (fixed)
+  ✅ Take Profit: 0.75% (fixed)
+  ✅ Risk:Reward: 1.5:1
+
+Entry Rules:
+  ✅ Max Slippage: 0.1%
+  ✅ Order Type: MARKET
+  ⏳ Validation: Configured, not integrated yet
+
+Time Filters:
+  ✅ Opening Blackout: 9:15-9:45 (disabled)
+  ✅ Closing Blackout: 3:00-3:30 (disabled)
+
+Confidence:
+  ✅ Minimum: 60%
+
+Position Sizing:
+  ✅ Maximum: 10% per trade
+
+Data Logging:
+  ✅ Sources: NSE API, Angel One only (skip yfinance)
+  ✅ File: prediction_log.csv (single accumulating file)
+  ✅ Target: 300+ predictions
+
+================================================================================
+CONFIGURED BUT NOT ACTIVE (MONTH 2)
+================================================================================
+
+ATR Caps:
+  ⏳ Min: 0.3% (prevents too-tight stops)
+  ⏳ Max: 1.5% (prevents wild stops)
+  ⏳ Module: atr_risk_manager.py (ready)
+  ⏳ Activation: After 300+ samples
+
+Entry Validation:
+  ⏳ Max Slippage: 0.1%
+  ⏳ Module: trade_entry_validator.py (ready)
+  ⏳ Integration: Backtesting first, then live
+  ⏳ Timeline: Month 2
+
+================================================================================
+MONTH 1 GOALS
+================================================================================
+
+Primary Objectives:
+  1. ✅ Keep dashboard running reliably
+  2. ⏳ Collect 300+ predictions with outcomes
+  3. ✅ Log data accurately (real-time sources only)
+  4. ✅ Maintain consistent risk management (0.5%/0.75%)
+  5. ⏳ Reach data threshold for XGBoost training
+
+Success Metrics:
+  - Predictions Logged: 300+ (target)
+  - Data Quality: Real-time sources only
+  - System Uptime: >95%
+  - CSV Integrity: Single file, no corruption
+  - Consistency: Same parameters throughout Month 1
+
+================================================================================
+MONTH 2 TRANSITION PLAN
+================================================================================
+
+Week 5: Analysis
+  - Analyze Month 1 performance
+  - Calculate win rate, profit factor, Sharpe ratio
+  - Identify weaknesses
+  - Prioritize improvements
+
+Week 6: Testing
+  - Test ATR-based stops (1x and 1.5x defaults)
+  - Test entry validation on historical data
+  - Compare to current system
+  - Choose best approach
+
+Week 7: Implementation
+  - Implement winning enhancements
+  - Paper trade for 1 week
+  - Monitor performance
+  - Go live if successful
+
+Week 8+: Dynamic Optimization
+  - Implement dynamic ATR multipliers (if data supports)
+  - Optimize based on XGBoost predictions
+  - Fine-tune parameters
+
+================================================================================
+ATR IMPLEMENTATION TIMELINE
+================================================================================
+
+Month 1 (Current):
+  - Use fixed 0.5%/0.75%
+  - Collect baseline data
+  - No ATR calculations
+
+Month 2 (After 300+ samples):
+  - Test ATR with 1x and 1.5x defaults
+  - Compare to fixed percentages
+  - No dynamic adjustment yet
+
+Month 2+ (After validation):
+  - Dynamic ATR multipliers
+  - XGBoost-driven optimization
+  - Adaptive based on market conditions
+
+================================================================================
+WHY THIS APPROACH?
+================================================================================
+
+Data-Driven Decisions:
+  ✅ Can't optimize without data
+  ✅ Need baseline performance first
+  ✅ Premature optimization = bad decisions
+  ✅ Measure, then improve
+
+Consistency:
+  ✅ Same parameters throughout Month 1
+  ✅ Clean data for analysis
+  ✅ Fair comparison in Month 2
+
+Risk Management:
+  ✅ Fixed percentages work in all conditions
+  ✅ Simple and reliable
+  ✅ Proven approach
+
+Scientific Method:
+  ✅ Hypothesis: ATR-based stops are better
+  ✅ Experiment: Collect data with fixed stops
+  ✅ Test: Compare ATR vs fixed on historical data
+  ✅ Conclusion: Implement if proven better
+
+================================================================================
+DOCUMENTATION
+================================================================================
+
+Configuration:
+  - config.py (all parameters)
+  - MONTH1_CONFIGURATION.md (complete reference)
+
+Ready for Month 2:
+  - trade_entry_validator.py (entry validation)
+  - atr_risk_manager.py (ATR-based risk management)
+  - backtesting_engine_v2.py (enhanced backtesting)
+
+Roadmap:
+  - FUTURE_ENHANCEMENTS.md (Month 2+ plan)
+  - ENTRY_RULES_CONFIGURED.md (entry validation details)
+  - ATR_CAPS_IMPLEMENTED.md (ATR caps documentation)
+
+Tracking:
+  - ANSWERS_TO_USER_QUESTIONS.txt (decision log)
+  - CONFIGURATION_LOCKED.txt (this document)
+
+================================================================================
+QUICK REFERENCE
+================================================================================
+
+Current System (Month 1):
+  Stop Loss: 0.5% | Take Profit: 0.75% | Risk:Reward: 1.5:1
+  Entry: Market orders | Max Slippage: 0.1% (not integrated)
+  Time Filters: Skip 9:15-9:45, 3:00-3:30
+  Confidence: Min 60% | Position: Max 10%
+  Logging: NSE/Angel One only | Target: 300+ samples
+
+Future System (Month 2):
+  Stop Loss: 1.0x ATR (0.3%-1.5%) | Targets: 1.0x, 1.5x ATR
+  Entry: Validated (<0.1% slippage) | Order: Market
+  Time Filters: Same | Confidence: Same | Position: Same
+  Optimization: Dynamic (if data supports)
+
+================================================================================
+SUMMARY
+================================================================================
+
+✅ Configuration locked for Month 1
+✅ Focus on data collection (300+ samples)
+✅ Fixed risk management (0.5%/0.75%)
+✅ ATR ready but not active (Month 2)
+✅ Entry validation ready but not integrated (Month 2)
+✅ Dynamic optimization planned (Month 2+)
+
+NEXT MILESTONE: 300+ predictions collected
+
+================================================================================
+Last Updated: March 2, 2026
+Status: LOCKED - No changes until Month 2
+================================================================================

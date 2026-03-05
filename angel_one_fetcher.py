@@ -15,6 +15,9 @@ from dotenv import load_dotenv
 from SmartApi import SmartConnect
 import pyotp
 
+# API usage tracking
+from api_rate_monitor import record_api_call
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -101,6 +104,7 @@ def fetch_nifty_angel(index="NIFTY") -> dict:
         response = smart_api.ltpData("NSE", symbol, token)
         
         if response and response.get('status'):
+            record_api_call("angel_one", f"ltpData/{symbol}")
             data = response['data']
             ltp = float(data['ltp'])
             open_price = float(data.get('open', ltp))
@@ -153,6 +157,7 @@ def fetch_vix_angel() -> dict:
         response = smart_api.ltpData("NSE", "INDIA VIX", INDIA_VIX_TOKEN)
         
         if response and response.get('status'):
+            record_api_call("angel_one", "ltpData/INDIA_VIX")
             data = response['data']
             vix = float(data['ltp'])
             close = float(data.get('close', vix))
@@ -219,6 +224,7 @@ def fetch_candles_angel(index="NIFTY", interval: str = "FIVE_MINUTE", days: int 
         })
         
         if response and response.get('status'):
+            record_api_call("angel_one", f"getCandleData/{symbol}/{interval}")
             candles = response['data']
             
             # Convert to DataFrame
@@ -343,6 +349,9 @@ def fetch_options_chain_angel(expiry_date: str = None) -> dict:
         
         # Calculate Max Pain
         max_pain = calculate_max_pain_from_data(options_data, strikes)
+        
+        # Record API call (one call for entire options chain)
+        record_api_call("angel_one", f"options_chain/{expiry_date}")
         
         print(f"✓ Options chain fetched: PCR={pcr:.3f}, Max Pain={max_pain}, Total OI={total_call_oi + total_put_oi:,}")
         

@@ -1,0 +1,293 @@
+═══════════════════════════════════════════════════════════════════════
+                    VISUAL INDICATOR GUIDE
+                  Data Source Logging Status
+═══════════════════════════════════════════════════════════════════════
+
+This guide shows what you'll see in the dashboard banner based on data
+source and market status.
+
+───────────────────────────────────────────────────────────────────────
+SCENARIO 1: REAL-TIME DATA + MARKET OPEN
+───────────────────────────────────────────────────────────────────────
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ✅ REAL-TIME DATA ACTIVE • NSE API • Live Market Data             │
+│                                                      ✅ LOGGING    │
+└────────────────────────────────────────────────────────────────────┘
+
+What this means:
+• Using NSE API (real-time, 0 delay)
+• Market is open (9:15 AM - 3:30 PM IST)
+• Predictions ARE being logged to CSV
+• Data quality: EXCELLENT ✅
+
+Action: None needed - system is working perfectly!
+
+───────────────────────────────────────────────────────────────────────
+SCENARIO 2: REAL-TIME DATA + MARKET CLOSED
+───────────────────────────────────────────────────────────────────────
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ✅ REAL-TIME DATA ACTIVE • NSE API • Live Market Data             │
+│                                                      ⏸ PAUSED      │
+└────────────────────────────────────────────────────────────────────┘
+
+What this means:
+• Using NSE API (real-time, 0 delay)
+• Market is closed (outside 9:15 AM - 3:30 PM IST)
+• Predictions are NOT being logged (market closed)
+• Data quality: EXCELLENT ✅
+
+Action: None needed - logging will resume when market opens.
+
+───────────────────────────────────────────────────────────────────────
+SCENARIO 3: DELAYED DATA (YFINANCE) + MARKET OPEN
+───────────────────────────────────────────────────────────────────────
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ⚠️ USING DELAYED DATA                                              │
+│ • Nifty Price (yfinance - 15 min delay)                            │
+│                                                  🚫 NOT LOGGING    │
+└────────────────────────────────────────────────────────────────────┘
+
+What this means:
+• Using yfinance (15 minute delay)
+• Market is open but real-time sources unavailable
+• Predictions are NOT being logged (delayed data)
+• Data quality: POOR ❌
+
+Action: Check why real-time sources are unavailable:
+1. NSE API might be down
+2. Angel One credentials might be invalid
+3. Network issues
+
+Troubleshooting:
+• Check .env file for Angel One credentials
+• Verify network connection
+• Check NSE website is accessible
+
+───────────────────────────────────────────────────────────────────────
+SCENARIO 4: ANGEL ONE BACKUP + MARKET OPEN
+───────────────────────────────────────────────────────────────────────
+
+┌────────────────────────────────────────────────────────────────────┐
+│ ✅ REAL-TIME DATA ACTIVE • Angel One • Live Market Data           │
+│                                                      ✅ LOGGING    │
+└────────────────────────────────────────────────────────────────────┘
+
+What this means:
+• Using Angel One SmartAPI (real-time, 0 delay)
+• NSE API failed, using backup source
+• Market is open (9:15 AM - 3:30 PM IST)
+• Predictions ARE being logged to CSV
+• Data quality: EXCELLENT ✅
+
+Action: None needed - backup source is working!
+
+Note: Angel One is a valid real-time source. Predictions will be logged.
+
+───────────────────────────────────────────────────────────────────────
+WHAT EACH STATUS MEANS
+───────────────────────────────────────────────────────────────────────
+
+✅ LOGGING
+• Predictions are being written to prediction_log.csv
+• Using real-time data (NSE or Angel One)
+• Market is open
+• Data is being collected for XGBoost training
+• Everything is working correctly!
+
+⏸ PAUSED
+• Predictions are NOT being logged
+• Market is closed (outside trading hours)
+• Using real-time data source (ready when market opens)
+• Normal behavior outside 9:15 AM - 3:30 PM IST
+
+🚫 NOT LOGGING
+• Predictions are NOT being logged
+• Using delayed data (yfinance - 15 min delay)
+• Market might be open but real-time sources unavailable
+• Need to fix data source issue
+
+───────────────────────────────────────────────────────────────────────
+DATA SOURCE PRIORITY
+───────────────────────────────────────────────────────────────────────
+
+The system tries sources in this order:
+
+1. NSE API (Primary)
+   • Real-time, 0 delay
+   • Free, no authentication
+   • Most reliable
+   ↓ (if fails)
+
+2. Angel One SmartAPI (Backup)
+   • Real-time, 0 delay
+   • Requires API credentials
+   • Reliable backup
+   ↓ (if fails)
+
+3. yfinance (Fallback)
+   • 15 minute delay
+   • Free, no authentication
+   • Last resort only
+
+LOGGING HAPPENS ONLY AT STEPS 1 AND 2!
+
+───────────────────────────────────────────────────────────────────────
+HOW TO CHECK LOGGING STATUS
+───────────────────────────────────────────────────────────────────────
+
+Method 1: Dashboard Banner (Real-time)
+• Look at top of dashboard
+• Green banner with "✅ LOGGING" = Good!
+• Yellow banner with "🚫 NOT LOGGING" = Problem!
+• Green banner with "⏸ PAUSED" = Market closed
+
+Method 2: Terminal Logs
+• Look for these messages:
+  INFO:prediction_logger:Logged prediction: BULLISH at 25000.5 (source: NSE API)
+  INFO:prediction_logger:Skipping log - using delayed data source: yfinance
+
+Method 3: CSV File
+• Open prediction_log.csv
+• Check data_source column
+• Should see "NSE API (Real-time)" or "Angel One (Real-time)"
+• Should NOT see "yfinance"
+
+Method 4: Verification Script
+• Run: python quick_verify_logger.py
+• Check "Data Source Distribution"
+• Should show only NSE API or Angel One
+
+───────────────────────────────────────────────────────────────────────
+COMMON QUESTIONS
+───────────────────────────────────────────────────────────────────────
+
+Q: Why is logging paused outside market hours?
+A: No point logging predictions when market is closed. Outcomes can't
+   be verified. Logging resumes automatically when market opens.
+
+Q: Why not log yfinance data?
+A: yfinance has 15 minute delay. Training ML model on delayed data
+   would result in inaccurate predictions. We only want real-time data.
+
+Q: What if I see "🚫 NOT LOGGING" during market hours?
+A: This means real-time sources (NSE, Angel One) are unavailable.
+   Check your network connection and Angel One credentials.
+
+Q: Is Angel One as good as NSE API?
+A: Yes! Both are real-time (0 delay). Angel One is a valid backup
+   source. Predictions will be logged normally.
+
+Q: How do I know if data is being collected?
+A: Check the dashboard banner. If it shows "✅ LOGGING", data is being
+   collected. You can also run: python quick_verify_logger.py
+
+Q: What if CSV has yfinance entries?
+A: This should NEVER happen! The filter should block it. If you see
+   yfinance in prediction_log.csv, run the test suite:
+   python test_data_source_filtering.py
+
+───────────────────────────────────────────────────────────────────────
+BEST PRACTICES
+───────────────────────────────────────────────────────────────────────
+
+1. Monitor Dashboard Banner
+   • Check it regularly during market hours
+   • Should show "✅ LOGGING" most of the time
+   • If you see "🚫 NOT LOGGING", investigate immediately
+
+2. Run Daily Verification
+   • Run: python quick_verify_logger.py
+   • Check data source distribution
+   • Verify no yfinance entries
+
+3. Check Terminal Logs
+   • Look for "Logged prediction" messages
+   • Should see them every 60 seconds during market hours
+   • If you see "Skipping log" messages, check data source
+
+4. Audit CSV Weekly
+   • Open prediction_log.csv
+   • Check data_source column
+   • Verify all entries are NSE API or Angel One
+   • No yfinance entries should exist
+
+5. Test After Changes
+   • If you modify code, run: python test_data_source_filtering.py
+   • Verify all 4 tests pass
+   • Check dashboard banner still works
+
+───────────────────────────────────────────────────────────────────────
+TROUBLESHOOTING
+───────────────────────────────────────────────────────────────────────
+
+Problem: Dashboard shows "🚫 NOT LOGGING" during market hours
+
+Solution:
+1. Check NSE API:
+   python -c "from data_fetcher import get_live_nifty_price; print(get_live_nifty_price())"
+
+2. Check Angel One credentials in .env:
+   ANGEL_ONE_API_KEY=your_key
+   ANGEL_ONE_CLIENT_ID=your_id
+   ANGEL_ONE_PASSWORD=your_password
+   ANGEL_ONE_TOTP_SECRET=your_secret
+
+3. Verify network connection:
+   ping www.nseindia.com
+
+4. Check if market is actually open:
+   python -c "from data_fetcher import is_market_open; print(is_market_open())"
+
+───────────────────────────────────────────────────────────────────────
+
+Problem: CSV has yfinance entries
+
+Solution:
+1. This should NEVER happen!
+2. Run test suite: python test_data_source_filtering.py
+3. Check prediction_logger.py - filter should block yfinance
+4. Check app.py - should check data source before logging
+5. If tests pass but CSV has yfinance, report as bug
+
+───────────────────────────────────────────────────────────────────────
+
+Problem: No predictions being logged at all
+
+Solution:
+1. Check if dashboard is running:
+   streamlit run app.py
+
+2. Check if market is open:
+   python -c "from data_fetcher import is_market_open; print(is_market_open())"
+
+3. Check terminal for errors:
+   Look for "Error logging prediction" messages
+
+4. Run verification:
+   python quick_verify_logger.py
+
+───────────────────────────────────────────────────────────────────────
+SUMMARY
+───────────────────────────────────────────────────────────────────────
+
+✅ GOOD STATES:
+• Green banner + "✅ LOGGING" = Perfect! Data being collected
+• Green banner + "⏸ PAUSED" = Normal, market closed
+
+⚠️ WARNING STATES:
+• Yellow banner + "🚫 NOT LOGGING" = Problem! Fix data source
+
+📊 DATA QUALITY:
+• NSE API = Excellent ✅
+• Angel One = Excellent ✅
+• yfinance = Poor ❌ (filtered out)
+
+🎯 GOAL:
+• Collect 300+ predictions with real-time data
+• Train XGBoost model on quality data
+• Get better predictions and higher win rate
+
+═══════════════════════════════════════════════════════════════════════

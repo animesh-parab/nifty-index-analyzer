@@ -1,0 +1,399 @@
+═══════════════════════════════════════════════════════════════════════════
+  XGBOOST ML MODEL - SYSTEM ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         NIFTY AI PREDICTOR                               │
+│                    WITH XGBOOST ML INTEGRATION                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+  PHASE 1: DATA COLLECTION (Automatic)
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          MARKET DATA SOURCES                             │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  NSE API          Angel One        yfinance        Global Cues          │
+│  ↓                ↓                ↓               ↓                     │
+│  Nifty Price      Options Chain    VIX             US Markets           │
+│  Real-time        PCR, Max Pain    Volatility      Dow, S&P, Nasdaq     │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      TECHNICAL INDICATORS                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  RSI (14)    MACD    EMA (9,21,50)    Bollinger Bands    ATR (14)      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      PREDICTION ENGINE                                   │
+│                   (Groq + Gemini LLMs)                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Input: All indicators + market data                                    │
+│  Output: BULLISH / BEARISH / SIDEWAYS + Confidence                      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      PREDICTION LOGGER                                   │
+│                   (prediction_logger.py)                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Logs to prediction_log.csv:                                            │
+│  • timestamp                                                             │
+│  • 13 indicator values (raw, not +1/-1)                                 │
+│  • prediction direction                                                  │
+│  • confidence                                                            │
+│  • entry_price                                                           │
+│  • actual_outcome (filled after 15 min)                                 │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+                          (Wait 15 minutes)
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      OUTCOME VERIFICATION                                │
+│                   (Background Thread)                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Fetch current price after 15 minutes                                   │
+│  Calculate price change %                                                │
+│                                                                          │
+│  If change > +0.1%  → actual_outcome = 1 (UP)                          │
+│  If change < -0.1%  → actual_outcome = -1 (DOWN)                       │
+│  If change ±0.1%    → actual_outcome = 0 (SIDEWAYS)                    │
+│                                                                          │
+│  Update prediction_log.csv with outcome                                 │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+                    (Repeat until 300+ samples)
+
+═══════════════════════════════════════════════════════════════════════════
+  PHASE 2: MODEL TRAINING (Manual - Click Button)
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      TRAINING DATA PREPARATION                           │
+│                        (xgb_model.py)                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Load prediction_log.csv                                                │
+│  ↓                                                                       │
+│  Filter rows with actual_outcome (not null)                             │
+│  ↓                                                                       │
+│  Check: Need 300+ samples minimum                                       │
+│  ↓                                                                       │
+│  Extract features (X) and target (y):                                   │
+│    X = 13 indicator values                                              │
+│    y = actual_outcome (1, -1, 0)                                        │
+│  ↓                                                                       │
+│  Split: 80% train, 20% test (shuffle=False!)                           │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      XGBOOST TRAINING                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  XGBClassifier(                                                          │
+│    n_estimators=200,      # 200 decision trees                          │
+│    max_depth=4,           # Max tree depth                              │
+│    learning_rate=0.05,    # Learning rate                               │
+│    subsample=0.8,         # 80% data per tree                           │
+│    colsample_bytree=0.8,  # 80% features per tree                       │
+│    eval_metric='mlogloss' # Multi-class log loss                        │
+│  )                                                                       │
+│                                                                          │
+│  Train on training set (80%)                                            │
+│  Evaluate on test set (20%)                                             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      EVALUATION & METRICS                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  • Accuracy: Overall prediction accuracy                                │
+│  • Confusion Matrix: Detailed breakdown                                 │
+│  • Classification Report: Precision, recall, F1                         │
+│  • Feature Importance: Top contributing features                        │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      SAVE MODEL                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Save trained model to: xgb_model.pkl                                   │
+│  Model is now ready for predictions!                                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+  PHASE 3: PREDICTION WITH XGBOOST (Automatic)
+═══════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          MARKET DATA                                     │
+│                    (Real-time during trading)                            │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      FEATURE EXTRACTION                                  │
+│                   (ai_engine_consensus.py)                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Extract 13 raw indicator values:                                       │
+│  • rsi_14, macd_value, macd_signal                                      │
+│  • ema_9, ema_21, ema_50                                                │
+│  • bb_position, atr_14                                                  │
+│  • pcr, vix, us_market_change                                           │
+│  • hour, day_of_week                                                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    ↓
+                    ┌───────────────────────────┐
+                    │   Check if model exists   │
+                    │   (xgb_model.pkl)         │
+                    └───────────────────────────┘
+                                    ↓
+                    ┌───────────────┴───────────────┐
+                    │                               │
+                YES │                               │ NO
+                    ↓                               ↓
+    ┌───────────────────────────┐   ┌───────────────────────────┐
+    │   XGBOOST PREDICTION      │   │   DUAL-AI FALLBACK        │
+    │   (xgb_model.py)          │   │   (Groq + Gemini only)    │
+    ├───────────────────────────┤   ├───────────────────────────┤
+    │                           │   │                           │
+    │ Load xgb_model.pkl        │   │ Groq: 50% weight          │
+    │ Predict direction         │   │ Gemini: 50% weight        │
+    │ Get confidence            │   │                           │
+    │                           │   │ Calculate consensus       │
+    │ XGBoost: 60% weight       │   │                           │
+    │                           │   └───────────────────────────┘
+    └───────────────────────────┘
+                    ↓
+    ┌───────────────────────────────────────────────────────────┐
+    │              PARALLEL LLM PREDICTIONS                      │
+    │           (Groq + Gemini in parallel)                      │
+    ├───────────────────────────────────────────────────────────┤
+    │                                                            │
+    │  ┌─────────────────────┐    ┌─────────────────────┐     │
+    │  │   Groq LLM          │    │   Gemini LLM        │     │
+    │  │   (Llama 3.3 70B)   │    │   (Gemini 2.5 Flash)│     │
+    │  ├─────────────────────┤    ├─────────────────────┤     │
+    │  │ Analyze all data    │    │ Analyze all data    │     │
+    │  │ Return: BULLISH/    │    │ Return: BULLISH/    │     │
+    │  │ BEARISH/SIDEWAYS    │    │ BEARISH/SIDEWAYS    │     │
+    │  │ + Confidence        │    │ + Confidence        │     │
+    │  │                     │    │                     │     │
+    │  │ Weight: 20%         │    │ Weight: 20%         │     │
+    │  └─────────────────────┘    └─────────────────────┘     │
+    │                                                            │
+    └───────────────────────────────────────────────────────────┘
+                                    ↓
+    ┌───────────────────────────────────────────────────────────┐
+    │              WEIGHTED CONSENSUS                            │
+    │           (ai_engine_consensus.py)                         │
+    ├───────────────────────────────────────────────────────────┤
+    │                                                            │
+    │  Calculate weighted average:                              │
+    │    XGBoost:  60% weight                                   │
+    │    Groq:     20% weight                                   │
+    │    Gemini:   20% weight                                   │
+    │                                                            │
+    │  Determine consensus level:                               │
+    │    • All agree → STRONG (+10% confidence)                │
+    │    • XGB agrees with final → MODERATE                    │
+    │    • XGB disagrees → WEAK (-15% confidence)              │
+    │                                                            │
+    │  Final prediction:                                        │
+    │    • Direction: BULLISH/BEARISH/SIDEWAYS                 │
+    │    • Confidence: 0-100%                                   │
+    │    • Consensus: STRONG/MODERATE/WEAK                     │
+    │                                                            │
+    └───────────────────────────────────────────────────────────┘
+                                    ↓
+    ┌───────────────────────────────────────────────────────────┐
+    │              DISPLAY ON DASHBOARD                          │
+    │                   (app.py)                                 │
+    ├───────────────────────────────────────────────────────────┤
+    │                                                            │
+    │  Show prediction with:                                    │
+    │  • Direction (BULLISH/BEARISH/SIDEWAYS)                  │
+    │  • Confidence (0-100%)                                    │
+    │  • Consensus level (STRONG/MODERATE/WEAK)                │
+    │  • Price targets (5min, 15min, 30min)                    │
+    │  • Top 3 reasons                                          │
+    │  • Model used (XGBoost + Dual-AI)                        │
+    │                                                            │
+    └───────────────────────────────────────────────────────────┘
+                                    ↓
+    ┌───────────────────────────────────────────────────────────┐
+    │              LOG PREDICTION                                │
+    │           (prediction_logger.py)                           │
+    ├───────────────────────────────────────────────────────────┤
+    │                                                            │
+    │  Log to prediction_log.csv for future training            │
+    │  Schedule outcome check in 15 minutes                     │
+    │                                                            │
+    └───────────────────────────────────────────────────────────┘
+                                    ↓
+                          (Cycle repeats)
+
+═══════════════════════════════════════════════════════════════════════════
+  DATA FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════════════════
+
+Market Data → Indicators → Features (13) → XGBoost (60%) ┐
+                                        → Groq (20%)     ├→ Consensus → Display
+                                        → Gemini (20%)   ┘
+                                                ↓
+                                        Log Prediction
+                                                ↓
+                                        Wait 15 min
+                                                ↓
+                                        Verify Outcome
+                                                ↓
+                                        Update Log
+                                                ↓
+                                        (300+ samples)
+                                                ↓
+                                        Retrain Model
+                                                ↓
+                                        (Cycle continues)
+
+═══════════════════════════════════════════════════════════════════════════
+  CONSENSUS CALCULATION LOGIC
+═══════════════════════════════════════════════════════════════════════════
+
+SCENARIO 1: All Agree (STRONG Consensus)
+─────────────────────────────────────────
+XGBoost:  BULLISH (68%)
+Groq:     BULLISH (72%)
+Gemini:   BULLISH (65%)
+                ↓
+Weighted: (68*0.6 + 72*0.2 + 65*0.2) = 68.2%
+Bonus:    +10% (all agree)
+Final:    BULLISH (78%) - STRONG consensus
+
+
+SCENARIO 2: XGB Agrees with Final (MODERATE Consensus)
+───────────────────────────────────────────────────────
+XGBoost:  BULLISH (65%)
+Groq:     BULLISH (70%)
+Gemini:   SIDEWAYS (55%)
+                ↓
+Weighted: (65*0.6 + 70*0.2 + 55*0.2) = 64%
+Bonus:    0% (partial agreement)
+Final:    BULLISH (64%) - MODERATE consensus
+
+
+SCENARIO 3: XGB Disagrees (WEAK Consensus)
+───────────────────────────────────────────
+XGBoost:  BEARISH (62%)
+Groq:     BULLISH (75%)
+Gemini:   BULLISH (68%)
+                ↓
+Weighted: (62*0.6 + 75*0.2 + 68*0.2) = 65.8%
+Penalty:  -15% (XGB disagrees)
+Final:    BULLISH (51%) - WEAK consensus
+
+
+SCENARIO 4: XGBoost Only (No LLMs)
+───────────────────────────────────
+XGBoost:  BULLISH (70%)
+Groq:     ERROR
+Gemini:   ERROR
+                ↓
+Final:    BULLISH (70%) - XGB_ONLY
+
+
+SCENARIO 5: Dual-AI Only (No XGBoost)
+──────────────────────────────────────
+XGBoost:  Not trained yet
+Groq:     BULLISH (72%)
+Gemini:   BULLISH (68%)
+                ↓
+Weighted: (72*0.5 + 68*0.5) = 70%
+Final:    BULLISH (70%) - DUAL_AI consensus
+
+═══════════════════════════════════════════════════════════════════════════
+  FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════
+
+nifty_ai_predictor/
+│
+├── Core Application
+│   ├── app.py                          # Main dashboard
+│   ├── config.py                       # Configuration
+│   ├── data_fetcher.py                 # Data sources
+│   ├── indicators.py                   # Technical indicators
+│   └── ai_engine_consensus.py          # Prediction engine (MODIFIED)
+│
+├── XGBoost Integration (NEW)
+│   ├── xgb_model.py                    # XGBoost training & prediction
+│   └── prediction_logger.py            # Prediction logging
+│
+├── Data Files (Auto-generated)
+│   ├── prediction_log.csv              # Training data
+│   └── xgb_model.pkl                   # Trained model
+│
+├── Documentation (NEW)
+│   ├── XGBOOST_INTEGRATION.md          # Technical guide
+│   ├── XGBOOST_QUICKSTART.txt          # Quick start
+│   ├── XGBOOST_IMPLEMENTATION_SUMMARY.txt
+│   ├── INSTALL_XGBOOST.txt             # Installation
+│   ├── XGBOOST_READY.txt               # Ready guide
+│   └── XGBOOST_ARCHITECTURE.txt        # This file
+│
+└── Dependencies
+    └── requirements.txt                 # Python packages (MODIFIED)
+
+═══════════════════════════════════════════════════════════════════════════
+  FEATURE IMPORTANCE EXAMPLE
+═══════════════════════════════════════════════════════════════════════════
+
+After training, you might see:
+
+Top 5 Features:
+1. rsi_14:           0.1523  (15.23% importance)
+2. macd_value:       0.1342  (13.42% importance)
+3. pcr:              0.1156  (11.56% importance)
+4. vix:              0.0987  (9.87% importance)
+5. ema_21:           0.0876  (8.76% importance)
+
+This tells you which indicators matter most for predictions!
+
+═══════════════════════════════════════════════════════════════════════════
+  TIMELINE VISUALIZATION
+═══════════════════════════════════════════════════════════════════════════
+
+Day 1:  ▓░░░░░░░░░░░░░░░░░░░  50 predictions logged
+Day 2:  ▓▓▓░░░░░░░░░░░░░░░░░  100 predictions logged
+Day 3:  ▓▓▓▓▓░░░░░░░░░░░░░░░  150 predictions logged
+Day 4:  ▓▓▓▓▓▓▓▓░░░░░░░░░░░░  250 predictions logged
+Day 5:  ▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░  300+ predictions → READY TO TRAIN! ✅
+
+After training:
+Day 6+: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  XGBoost active, collecting more data
+
+═══════════════════════════════════════════════════════════════════════════
+
+This architecture ensures:
+✓ Automatic data collection
+✓ Non-blocking outcome verification
+✓ Manual training control
+✓ Weighted consensus predictions
+✓ Graceful fallback handling
+✓ Continuous improvement through retraining
+
+═══════════════════════════════════════════════════════════════════════════
