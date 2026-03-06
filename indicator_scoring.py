@@ -17,26 +17,38 @@ def get_time_confidence_multiplier(hour, minute):
     Returns confidence multiplier based on time of day.
     Returns None to skip prediction entirely during disabled zones.
     """
-    time = hour * 60 + minute  # convert to minutes
-
-    # Disabled zones - skip prediction entirely
-    if time < 555:   # Before 9:15
+    time = hour * 60 + minute  # Convert to minutes
+    
+    # Pre-market (no NSE data yet)
+    if time < 555:              # Before 9:15 AM
         return None
-    if time < 570:   # 9:15-9:30 opening volatility
+    
+    # Opening (volatile but valuable for XGBoost)
+    if 555 <= time < 570:       # 9:15-9:30 AM
+        return None             # Pre-open, no real data
+    
+    if 570 <= time < 600:       # 9:30-10:00 AM
+        return 0.5              # Opening volatile, low confidence
+    
+    # Prime trading zone
+    if 600 <= time < 720:       # 10:00-12:00 PM
+        return 1.0              # Full confidence
+    
+    # Lunch zone
+    if 720 <= time < 810:       # 12:00-13:30 PM
+        return 0.6              # Reduced confidence
+    
+    # Afternoon prime zone
+    if 810 <= time < 870:       # 13:30-14:30 PM
+        return 1.0              # Full confidence
+    
+    # Pre-close zone
+    if 870 <= time < 900:       # 14:30-15:00 PM
+        return 0.7              # Reduced confidence
+    
+    # Closing (unreliable data)
+    if time >= 900:             # After 15:00 PM
         return None
-    if time > 900:   # After 3:00 closing volatility
-        return None
-
-    # Low confidence zones
-    if time < 585:          # 9:30-9:45
-        return 0.5
-    if 720 < time < 780:    # 12:00-1:00 lunch hour
-        return 0.6
-    if time > 870:          # 2:30-3:00
-        return 0.7
-
-    # High confidence zones (10:00-12:00 and 1:30-2:30)
-    return 1.0
 
 
 # ================================================================

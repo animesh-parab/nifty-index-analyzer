@@ -4,6 +4,7 @@ Fetches historical 1-minute candle data and generates predictions
 """
 
 import pandas as pd
+import csv
 import numpy as np
 from datetime import datetime, timedelta
 import pytz
@@ -111,10 +112,14 @@ def backfill_missing_predictions(start_time_str: str, end_time_str: str):
                 {}  # No news sentiment for backfill
             )
             
-            if prediction is None or prediction.get('direction') == 'BLOCKED':
-                print(f"⏭️  {current_time.strftime('%H:%M:%S')} - Time filter blocked, skipping")
-                current_time += timedelta(minutes=1)
-                continue
+            # If time filter blocks prediction, log as BLOCKED (don't skip!)
+            if prediction is None:
+                print(f"⏸  {current_time.strftime('%H:%M:%S')} - Time filter active, logging as BLOCKED")
+                prediction = {
+                    'direction': 'BLOCKED',
+                    'confidence': 0
+                }
+                # Continue to log — do NOT skip
             
             # Prepare indicator values for logging
             indicator_values = {
@@ -153,9 +158,9 @@ def backfill_missing_predictions(start_time_str: str, end_time_str: str):
                 'actual_outcome': None  # Will be filled by backfill_outcomes.py
             }
             
-            # Append to CSV
+            # Append to CSV with proper quoting
             df_entry = pd.DataFrame([log_entry])
-            df_entry.to_csv(LOG_FILE, mode='a', header=False, index=False)
+            df_entry.to_csv(LOG_FILE, mode='a', header=False, index=False, quoting=csv.QUOTE_ALL)
             
             print(f"✅ {current_time.strftime('%H:%M:%S')} - {prediction.get('direction')} ({prediction.get('confidence')}%) at {current_price:.2f}")
             predictions_added += 1

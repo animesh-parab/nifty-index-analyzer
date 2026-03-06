@@ -6,6 +6,7 @@ Logs every prediction with indicators and actual outcome 15 minutes later.
 """
 
 import pandas as pd
+import csv
 import os
 from datetime import datetime, timedelta
 import threading
@@ -23,6 +24,18 @@ OUTCOME_DELAY_MINUTES = 60  # Updated to 60-min lookback on March 4 2026 (was 15
 _last_log_time = None
 _log_lock = threading.Lock()
 
+
+def clean_field(value):
+    """
+    Clean text fields to prevent CSV corruption.
+    Removes newlines, carriage returns, and extra whitespace.
+    """
+    if isinstance(value, str):
+        value = value.replace('\n', ' ')
+        value = value.replace('\r', ' ')
+        value = ' '.join(value.split())
+    return value
+
 # Initialize CSV if it doesn't exist
 if not os.path.exists(LOG_FILE):
     df = pd.DataFrame(columns=[
@@ -31,7 +44,7 @@ if not os.path.exists(LOG_FILE):
         'vix', 'hour', 'day_of_week', 'us_market_change',
         'final_direction', 'confidence', 'entry_price', 'data_source', 'actual_outcome'
     ])
-    df.to_csv(LOG_FILE, index=False)
+    df.to_csv(LOG_FILE, index=False, quoting=csv.QUOTE_ALL)
     logger.info(f"Created new prediction log: {LOG_FILE}")
 
 
@@ -83,16 +96,16 @@ def log_prediction(indicator_values: dict, prediction: dict, current_price: floa
             'hour': now.hour,
             'day_of_week': now.weekday(),
             'us_market_change': indicator_values.get('us_market_change', 0),
-            'final_direction': prediction.get('direction', 'SIDEWAYS'),
+            'final_direction': clean_field(prediction.get('direction', 'SIDEWAYS')),
             'confidence': prediction.get('confidence', 0),
             'entry_price': current_price,
-            'data_source': data_source,
+            'data_source': clean_field(data_source),
             'actual_outcome': None  # Will be filled later
         }
         
-        # Append to CSV
+        # Append to CSV with proper quoting to prevent corruption
         df = pd.DataFrame([log_entry])
-        df.to_csv(LOG_FILE, mode='a', header=False, index=False)
+        df.to_csv(LOG_FILE, mode='a', header=False, index=False, quoting=csv.QUOTE_ALL)
         
         # Schedule outcome check in background thread
         thread = threading.Thread(
@@ -175,7 +188,7 @@ def _check_outcome_later(prediction_time: datetime, entry_price: float):
 
             if mask.any():
                 df.loc[mask, 'actual_outcome'] = outcome
-                df.to_csv(LOG_FILE, index=False)
+                df.to_csv(LOG_FILE, index=False, quoting=csv.QUOTE_ALL)
                 logger.info(f"✅ Updated outcome for {prediction_time.strftime('%H:%M:%S')}: {outcome}")
             else:
                 logger.warning(f"Could not find prediction entry for {prediction_time.strftime('%H:%M:%S')}")

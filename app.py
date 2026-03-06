@@ -418,6 +418,9 @@ def main():
             prediction = {"direction": "UNKNOWN", "confidence": 0, "regime": "UNKNOWN"}
         
         regime = prediction.get("regime", "UNKNOWN")
+        # Fallback for empty or None regime
+        if not regime or regime == '' or regime is None or regime == "UNKNOWN":
+            regime = 'NEUTRAL'
         regime_color = theme['green'] if regime == "TRENDING" else theme['yellow'] if regime == "RANGING" else theme['text_muted']
         
         st.markdown(f"""
@@ -690,7 +693,8 @@ def main():
                 st.info("No trade signals logged yet. Signals appear when BULLISH or BEARISH predictions are made.")
                 
         except Exception as e:
-            st.error(f"Error loading signal log: {str(e)}")
+            st.error(f"❌ Signal log error: {str(e)}")
+            st.info("💡 Try running: python scripts/remove_duplicates.py")
 
     # ── TAB 4: MODEL ACCURACY ──────────────────────────────────────────────────
     with tab4:
@@ -815,7 +819,8 @@ def main():
                 st.info("No predictions with outcomes yet. Outcomes are filled 60 minutes after prediction.")
                 
         except Exception as e:
-            st.error(f"Error loading model accuracy: {str(e)}")
+            st.error(f"❌ Model accuracy error: {str(e)}")
+            st.info("💡 Try running: python scripts/remove_duplicates.py")
 
     # ── TAB 5: NEWS ────────────────────────────────────────────────────────────
     with tab5:
@@ -850,9 +855,15 @@ def main():
         # Sentiment summary
         sentiment = news_data.get('sentiment', {})
         if sentiment:
-            sent_score = sentiment.get('score', 0)
+            sent_score = sentiment.get('score', None)
             sent_label = sentiment.get('label', 'NEUTRAL')
             sent_color = theme['green'] if sent_label == 'POSITIVE' else theme['red'] if sent_label == 'NEGATIVE' else theme['yellow']
+            
+            # Format score display
+            if sent_score is None or sent_score == 0:
+                sent_score_display = 'N/A'
+            else:
+                sent_score_display = f'{sent_score:.2f}'
             
             st.markdown(f"""
             <div style="background: {theme['bg_tertiary']}; border: 2px solid {sent_color}; 
@@ -864,7 +875,7 @@ def main():
                     {sent_label}
                 </div>
                 <div style="font-size: 1rem; color: {theme['text_muted']}; margin-top: 4px;">
-                    Score: {sent_score:.2f}
+                    Score: {sent_score_display}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -924,28 +935,29 @@ def main():
             st.success("Cleared triggered alerts")
             st.rerun()
 
-    # ── LOG PREDICTION ─────────────────────────────────────────────────────────
-    if prediction and price_data.get("price", 0) > 0 and prediction.get("direction") != "BLOCKED":
-        try:
-            last_candle = df_candles.iloc[-1] if not df_candles.empty else {}
-            
-            indicator_values = {
-                'rsi_14': indicator_summary.get('RSI', {}).get('value', 0),
-                'macd_value': indicator_summary.get('MACD', {}).get('value', 0),
-                'macd_signal': last_candle.get('MACD_Signal', 0),
-                'ema_9': indicator_summary.get('EMA_Trend', {}).get('ema_9', 0),
-                'ema_21': indicator_summary.get('EMA_Trend', {}).get('ema_21', 0),
-                'ema_50': indicator_summary.get('EMA_Trend', {}).get('ema_50', 0),
-                'bb_position': (last_candle.get('Close', 0) - last_candle.get('BB_Lower', 0)) / (last_candle.get('BB_Upper', 0) - last_candle.get('BB_Lower', 0)) if (last_candle.get('BB_Upper', 0) - last_candle.get('BB_Lower', 0)) > 0 else 0.5,
-                'atr_14': indicator_summary.get('ATR', {}).get('value', 0),
-                'vix': vix_data.get('vix', 15.0),
-                'us_market_change': global_cues.get('S&P 500', {}).get('pct_change', 0),
-                'data_source': price_data.get('source', 'Unknown')
-            }
-            
-            log_prediction(indicator_values, prediction, price_data.get("price", 0))
-        except:
-            pass
+    # ── LOG PREDICTION (DISABLED - standalone_logger.py handles all logging) ──
+    # Dashboard only READS from CSV, never writes to prevent duplicate rows
+    # if prediction and price_data.get("price", 0) > 0 and prediction.get("direction") != "BLOCKED":
+    #     try:
+    #         last_candle = df_candles.iloc[-1] if not df_candles.empty else {}
+    #         
+    #         indicator_values = {
+    #             'rsi_14': indicator_summary.get('RSI', {}).get('value', 0),
+    #             'macd_value': indicator_summary.get('MACD', {}).get('value', 0),
+    #             'macd_signal': last_candle.get('MACD_Signal', 0),
+    #             'ema_9': indicator_summary.get('EMA_Trend', {}).get('ema_9', 0),
+    #             'ema_21': indicator_summary.get('EMA_Trend', {}).get('ema_21', 0),
+    #             'ema_50': indicator_summary.get('EMA_Trend', {}).get('ema_50', 0),
+    #             'bb_position': (last_candle.get('Close', 0) - last_candle.get('BB_Lower', 0)) / (last_candle.get('BB_Upper', 0) - last_candle.get('BB_Lower', 0)) if (last_candle.get('BB_Upper', 0) - last_candle.get('BB_Lower', 0)) > 0 else 0.5,
+    #             'atr_14': indicator_summary.get('ATR', {}).get('value', 0),
+    #             'vix': vix_data.get('vix', 15.0),
+    #             'us_market_change': global_cues.get('S&P 500', {}).get('pct_change', 0),
+    #             'data_source': price_data.get('source', 'Unknown')
+    #         }
+    #         
+    #         log_prediction(indicator_values, prediction, price_data.get("price", 0))
+    #     except:
+    #         pass
 
 
 if __name__ == "__main__":

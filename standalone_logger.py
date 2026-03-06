@@ -78,10 +78,19 @@ def generate_and_log_prediction():
                 oi_data, vix_data, {}
             )
             
-            # If time filter blocks prediction, skip logging
+            # If time filter blocks prediction, log as BLOCKED (don't skip data collection!)
             if prediction is None:
-                logger.info("⏸ Prediction blocked by time filter (disabled zone)")
-                return
+                logger.info("⏸ Time filter active - logging as BLOCKED")
+                prediction = {
+                    'direction': 'BLOCKED',
+                    'confidence': 0,
+                    'strength': 'N/A',
+                    'regime': 'UNKNOWN',
+                    'score': 0,
+                    'model_used': 'Time Filter',
+                    'generated_at': datetime.now(IST).strftime('%H:%M:%S IST')
+                }
+                # Continue to log — do NOT return here
                 
         except Exception as e:
             logger.warning(f"Enhanced prediction failed, using rule-based: {e}")

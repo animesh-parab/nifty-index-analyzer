@@ -2,14 +2,17 @@
 
 AI-powered Nifty 50 prediction and trading system using XGBoost, technical indicators, and dual-AI consensus.
 
-## 🚀 Current Status (March 5, 2026)
+## 🚀 Current Status (March 6, 2026)
 
-- ✅ **655 predictions collected** with 60-minute outcome tracking
+- ✅ **618 predictions collected** with 60-minute outcome tracking
+- ✅ **Time filter bug FIXED** - Now logging 100% of market hours (was 48%)
 - ✅ **Trade signal scanner** integrated with locked rules (8 signals/day, 50% win rate)
-- ✅ **All 9 indicator fixes** implemented and tested (8/8 tests passing)
+- ✅ **Dashboard redesigned** - Alt-tab friendly, 900 lines (down from 1,868)
+- ✅ **News fetcher updated** - 3 reliable RSS sources, 24-hour filter
+- ✅ **CSV corruption fixed** - Proper quoting on all writes
 - ✅ **System ready for live trading** with real-time data sources
-- ✅ **ATR-based stops** and risk management
-- ✅ **Time filter** active (10:00-12:00, 1:30-2:30 only)
+
+**Latest:** See `MARCH_2026_FIXES.md` for all March 6 improvements
 
 ---
 
