@@ -12,7 +12,6 @@ from google import genai
 from config import GROQ_API_KEY, GROQ_MODEL, GEMINI_API_KEY
 from datetime import datetime
 import pytz
-from api_rate_monitor import record_api_call
 
 IST = pytz.timezone("Asia/Kolkata")
 

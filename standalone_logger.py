@@ -17,7 +17,6 @@ from data_fetcher import get_live_nifty_price, get_candle_data, get_india_vix, g
 from indicators import calculate_all_indicators, get_indicator_summary, detect_candlestick_patterns
 from ai_engine_consensus import get_consensus_prediction, get_rule_based_prediction
 from enhanced_prediction_engine import get_enhanced_prediction, initialize_previous_day_levels
-from greeks import get_atm_greeks
 from prediction_logger import log_prediction
 
 logging.basicConfig(
@@ -61,15 +60,6 @@ def generate_and_log_prediction():
         else:
             logger.warning("No candle data available")
             return
-        
-        # Get Greeks
-        greeks = {}
-        if price_data.get("price", 0) > 0 and oi_data.get("expiry"):
-            greeks = get_atm_greeks(
-                price_data["price"], 
-                vix_data.get("vix", 15), 
-                oi_data.get("expiry", "")
-            )
         
         # Generate prediction using enhanced engine
         try:

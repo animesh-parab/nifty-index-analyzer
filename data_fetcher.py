@@ -32,9 +32,6 @@ from config import (
     CANDLE_INTERVAL, CANDLE_PERIOD, CROSS_VALIDATE_THRESHOLD, TIMEZONE
 )
 
-# API usage tracking
-from api_rate_monitor import record_api_call
-
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -111,7 +108,6 @@ def fetch_nifty_nse(index="NIFTY") -> dict:
             result = _enhanced_nse.get_nifty_data(index)
             if result.get('success'):
                 logger.info(f"✓ NSE data fetched via enhanced fetcher for {index}")
-                record_api_call("nse", f"equity-stockIndices/{index}")
                 return result
             else:
                 logger.warning(f"⚠ Enhanced fetcher failed for {index}, trying fallback...")
@@ -135,7 +131,6 @@ def fetch_nifty_nse(index="NIFTY") -> dict:
                 data = resp.json()
                 idx = data["data"][0]
                 logger.info(f"✓ NSE data fetched via fallback for {index} (attempt {attempt + 1})")
-                record_api_call("nse", f"equity-stockIndices/{index}")
                 return {
                     "price": float(idx.get("lastPrice", 0) or idx.get("last", 0)),
                     "open": float(idx.get("open", 0)),
@@ -184,7 +179,6 @@ def fetch_nifty_yfinance(index="NIFTY") -> dict:
         info = ticker.fast_info
         price = float(info.last_price or 0)
         prev = float(info.previous_close or 0)
-        record_api_call("yfinance", f"Ticker/{symbol}")
         return {
             "price": price,
             "prev_close": prev,
@@ -361,7 +355,6 @@ def get_india_vix() -> dict:
         vix = float(info.last_price or 0)
         prev = float(info.previous_close or 0)
         
-        record_api_call("yfinance", f"Ticker/{VIX_SYMBOL_YF}")
         logger.info(f"✓ VIX fetched from yfinance: {vix:.2f}")
         
         return {
@@ -379,7 +372,6 @@ def get_india_vix() -> dict:
         url = "https://www.nseindia.com/api/equity-stockIndices?index=INDIA%20VIX"
         resp = sess.get(url, timeout=10)
         if resp.status_code == 200:
-            record_api_call("nse", "equity-stockIndices/INDIA_VIX")
             data = resp.json()
             vix_data = data["data"][0]
             return {
@@ -445,8 +437,6 @@ def get_options_chain() -> dict:
 
                     logger.info(f"✓ NSE options chain fetched: PCR={pcr:.3f}, Max Pain={max_pain:,.0f}")
                     
-                    record_api_call("nse", "option-chain-indices/NIFTY")
-
                     return {
                         "chain": df_chain,
                         "expiry": nearest_expiry,
@@ -567,7 +557,6 @@ def get_global_cues() -> dict:
             chg = round(price - prev, 2)
             pct = round((price - prev) / prev * 100, 2) if prev else 0
             cues[name] = {"price": price, "change": chg, "pct_change": pct}
-            record_api_call("yfinance", f"Ticker/{sym}")
         except Exception:
             cues[name] = {"price": 0, "change": 0, "pct_change": 0}
     return cues
