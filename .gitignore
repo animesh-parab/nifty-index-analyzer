@@ -51,6 +51,9 @@ logs/
 kaggle/
 archive_historical_experiments/
 
+# Backup files
+data/backups/
+
 # Conda environment (local only)
 .conda/
 

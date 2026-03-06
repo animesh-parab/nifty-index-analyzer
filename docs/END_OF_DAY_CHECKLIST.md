@@ -1,136 +1,191 @@
-# End of Day Data Collection - March 2, 2026
+# End of Day Checklist - March 6, 2026
 
-## Current Status (12:37 PM)
+## 🕒 After Market Close (3:30 PM IST)
 
-✅ Logger running successfully
-✅ Excel filling with data
-✅ Outcomes being tracked
-✅ System stable
-
-## Let It Run Until 3:30 PM
-
-**Keep laptop:**
-- Awake (don't sleep)
-- Plugged in
-- Logger window open
-
-**Market closes:** 3:30 PM IST
-
----
-
-## After 3:30 PM - Run These Checks:
-
-### 1. Check Total Data Collected
-
+### Step 1: Stop the Logger
 ```bash
-python end_of_day_report.py
+# The logger will auto-stop at market close, but you can manually stop if needed
+# Find the process and stop it
 ```
 
-This will show:
-- Total predictions collected
-- Predictions with outcomes
-- Data quality metrics
-- Ready for XGBoost training?
+**Status**: ⏳ Pending
 
-### 2. Backfill Any Missing Outcomes
+---
 
+### Step 2: Backfill Missing Outcomes (CRITICAL)
 ```bash
-python backfill_outcomes.py
+python scripts/backfill_outcomes.py
 ```
 
-This ensures all predictions >15 min old have outcomes filled.
+**What it does**:
+- Fills actual outcomes for all predictions from today
+- Uses 60-minute lookback with max move logic
+- Updates prediction_log.csv with UP/DOWN/SIDEWAYS outcomes
 
-### 3. View Summary Statistics
+**Expected**:
+- ~47 new predictions from 9:30-10:16 backfill need outcomes
+- Plus any predictions logged after 10:20 AM
+- Total: ~100-150 predictions to backfill
 
-The report will show:
-- Total predictions (target: 300+)
-- Outcome distribution (UP/DOWN/SIDEWAYS)
-- Data source breakdown (NSE vs Angel One)
-- Hourly collection rate
-- Any gaps or issues
-
----
-
-## Expected Results
-
-**Time available:** 12:37 PM to 3:30 PM = ~3 hours
-**Expected predictions:** ~180 (at 1 per minute)
-**Already collected:** ~45
-**Total by end of day:** ~225 predictions
-
-**Note:** Need 300+ for optimal XGBoost training, so may need to collect data for 2-3 days.
+**Status**: ⏳ Pending
 
 ---
 
-## What to Do After 3:30 PM
-
-### Option 1: Enough Data (300+)
-If you have 300+ predictions with outcomes:
+### Step 3: Generate End of Day Report
 ```bash
-python xgb_model.py
-```
-This will train your XGBoost model!
-
-### Option 2: Need More Data (<300)
-Continue collecting tomorrow:
-1. Keep the CSV file (don't delete)
-2. Run logger again tomorrow during market hours
-3. Data will accumulate in same file
-4. Train model once you reach 300+
-
----
-
-## Files to Check
-
-1. **prediction_log.csv** - Your main data file
-2. **prediction_log_backup_*.csv** - Backups (keep these)
-
----
-
-## Quick Status Check Anytime
-
-```bash
-python check_current_status.py
+python scripts/end_of_day_report.py
 ```
 
-Shows:
-- Total predictions
-- Last prediction time
-- Logger status (running/stopped)
-- Outcomes filled
+**What it does**:
+- Shows total predictions collected today
+- Shows predictions with outcomes
+- Shows accuracy statistics
+- Shows data quality metrics
+
+**Status**: ⏳ Pending
 
 ---
 
-## Troubleshooting
-
-### If logger stops:
+### Step 4: Check System Status
 ```bash
-python standalone_logger.py
+python scripts/check_current_status.py
 ```
 
-### If outcomes not filling:
+**What it does**:
+- Verifies all predictions have outcomes
+- Checks for duplicates
+- Validates data quality
+- Shows readiness for XGBoost training
+
+**Status**: ⏳ Pending
+
+---
+
+### Step 5: Backup Today's Data
 ```bash
-python backfill_outcomes.py
+# Create backup with today's date
+python -c "import pandas as pd; from datetime import datetime; df = pd.read_csv('prediction_log.csv'); df.to_csv(f'backups/prediction_log_backup_{datetime.now().strftime(\"%Y%m%d_%H%M%S\")}.csv', index=False); print('Backup created')"
 ```
 
-### If you see errors in PowerShell:
-- Ignore Unicode/emoji errors (cosmetic only)
-- Logger is working if CSV is updating
+**What it does**:
+- Creates timestamped backup in backups/ folder
+- Protects against data loss
+- Allows rollback if needed
+
+**Status**: ⏳ Pending
 
 ---
 
-## Summary
+### Step 6: Check Prediction Log Stats
+```bash
+python -c "import pandas as pd; df = pd.read_csv('prediction_log.csv'); print(f'Total predictions: {len(df)}'); print(f'With outcomes: {df[\"actual_outcome\"].notna().sum()}'); print(f'Missing outcomes: {df[\"actual_outcome\"].isna().sum()}'); print(f'Ready for training: {df[\"actual_outcome\"].notna().sum() >= 300}')"
+```
 
-✅ System is working
-✅ Data is being collected
-✅ Let it run until 3:30 PM
-✅ Check results after market close
+**Expected Output**:
+```
+Total predictions: ~700-750
+With outcomes: ~650-700
+Missing outcomes: 0-50 (recent predictions only)
+Ready for training: True
+```
 
-**See you at 3:30 PM for the end-of-day report!**
+**Status**: ⏳ Pending
 
 ---
 
-**Current Time:** 12:37 PM
-**Market Close:** 3:30 PM
-**Time Remaining:** ~3 hours
-**Status:** Collecting data... 📊
+### Step 7: Review Trade Signals (Optional)
+```bash
+# Check trade_journal.md for any signals that fired today
+# Review if any CALL/PUT setups were detected
+# Document performance if trades were taken
+```
+
+**What to check**:
+- How many CALL signals fired?
+- How many PUT signals fired?
+- Were confluence requirements met (7/7)?
+- Did any signals meet entry criteria?
+
+**Status**: ⏳ Pending
+
+---
+
+### Step 8: Clean Up Temporary Files (Optional)
+```bash
+# Remove any temporary files created during the day
+Remove-Item *.tmp -ErrorAction SilentlyContinue
+Remove-Item prediction_log_fixed.csv -ErrorAction SilentlyContinue
+```
+
+**Status**: ⏳ Pending
+
+---
+
+### Step 9: Commit and Push to GitHub
+```bash
+git add prediction_log.csv
+git add backups/
+git commit -m "EOD: March 6, 2026 - Added [X] predictions with outcomes"
+git push origin main
+```
+
+**Note**: Only push if you want to backup prediction data to GitHub. The .gitignore blocks *.csv by default except instruments_nifty_options.csv.
+
+**Status**: ⏳ Pending
+
+---
+
+### Step 10: Plan for Tomorrow
+```bash
+# Review what worked today
+# Check if any adjustments needed
+# Ensure logger will start automatically tomorrow at 9:15 AM
+```
+
+**Tomorrow's Plan**:
+- [ ] Start logger at 9:15 AM: `python standalone_logger.py`
+- [ ] Monitor dashboard: `streamlit run app.py`
+- [ ] Watch for trade signals during 10:00-12:00 and 1:30-2:30
+- [ ] Continue data collection for XGBoost training
+
+**Status**: ⏳ Pending
+
+---
+
+## 📊 Today's Summary (To be filled after Step 3)
+
+**Data Collection**:
+- Predictions logged: ___
+- With outcomes: ___
+- Data quality: ___
+
+**Trade Signals**:
+- CALL signals: ___
+- PUT signals: ___
+- Signals taken: ___
+
+**System Health**:
+- API errors: ___
+- Data source: NSE / Angel One / Both
+- Logger uptime: ___
+
+---
+
+## 🚨 Issues to Address (If Any)
+
+- [ ] None yet
+
+---
+
+## 📝 Notes
+
+- CSV was corrupted earlier today (line 620 error) - fixed by skipping bad lines
+- Backfilled 47 predictions from 9:30-10:16 AM
+- Logger started at 10:20 AM
+- Options chain API having issues (Angel One returning empty responses)
+
+---
+
+**Created**: March 6, 2026 10:22 AM IST
+**Last Updated**: March 6, 2026 10:22 AM IST
+**Status**: In Progress - Market Open
