@@ -536,29 +536,19 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # PCR
-        pcr = oi_data.get("pcr", 0)
-        pcr_signal = "BULLISH" if pcr > PCR_BULLISH else "BEARISH" if pcr < PCR_BEARISH else "NEUTRAL"
-        pcr_class = "indicator-bullish" if pcr > PCR_BULLISH else "indicator-bearish" if pcr < PCR_BEARISH else "indicator-neutral"
-        pcr_color = theme['green'] if pcr > PCR_BULLISH else theme['red'] if pcr < PCR_BEARISH else theme['yellow']
-        
+        # PCR (Not implemented yet)
         st.markdown(f"""
-        <div class="indicator-row {pcr_class}">
+        <div class="indicator-row indicator-neutral">
             <div class="indicator-name">PCR (Put/Call Ratio)</div>
-            <div class="indicator-value" style="color: {pcr_color};">{pcr:.3f} • {pcr_signal}</div>
+            <div class="indicator-value" style="color: {theme['text_muted']};">N/A - Coming Soon</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Max Pain
-        max_pain = oi_data.get("max_pain", 0)
-        mp_diff = price - max_pain if price and max_pain else 0
-        
+        # Max Pain (Not implemented yet)
         st.markdown(f"""
         <div class="indicator-row indicator-neutral">
             <div class="indicator-name">Max Pain</div>
-            <div class="indicator-value" style="color: {theme['text_primary']};">
-                {max_pain:,.0f} ({abs(mp_diff):.0f}pts {'above' if mp_diff > 0 else 'below'})
-            </div>
+            <div class="indicator-value" style="color: {theme['text_muted']};">N/A - Coming Soon</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -606,9 +596,7 @@ def main():
             if oi_data.get("resistance"):
                 fig.add_hline(y=oi_data["resistance"], line_dash="dash", line_color=theme['red'],
                               line_width=2, annotation_text=f"Resistance {oi_data['resistance']:,.0f}", row=1, col=1)
-            if oi_data.get("max_pain"):
-                fig.add_hline(y=oi_data["max_pain"], line_dash="dot", line_color=theme['yellow'],
-                              line_width=2, annotation_text=f"Max Pain {oi_data['max_pain']:,.0f}", row=1, col=1)
+            # Max Pain removed - not implemented yet
 
             # RSI
             if "RSI" in df_today:
