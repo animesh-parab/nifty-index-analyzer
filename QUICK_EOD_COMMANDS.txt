@@ -1,0 +1,28 @@
+===============================================
+QUICK END OF DAY COMMANDS - March 6, 2026
+===============================================
+
+After market close (3:30 PM), run these in order:
+
+1. BACKFILL OUTCOMES (MOST IMPORTANT)
+   python scripts/backfill_outcomes.py
+
+2. END OF DAY REPORT
+   python scripts/end_of_day_report.py
+
+3. CHECK STATUS
+   python scripts/check_current_status.py
+
+4. BACKUP DATA
+   python -c "import pandas as pd; from datetime import datetime; df = pd.read_csv('prediction_log.csv'); df.to_csv(f'backups/prediction_log_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv', index=False); print('Backup created')"
+
+5. CHECK STATS
+   python -c "import pandas as pd; df = pd.read_csv('prediction_log.csv'); print(f'Total: {len(df)}, With outcomes: {df[\"actual_outcome\"].notna().sum()}, Missing: {df[\"actual_outcome\"].isna().sum()}')"
+
+===============================================
+TOMORROW MORNING (9:15 AM)
+===============================================
+
+python standalone_logger.py
+
+===============================================
