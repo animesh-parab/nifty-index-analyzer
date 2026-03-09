@@ -15,6 +15,7 @@ from indicator_scoring import (
     score_ema,
     score_bollinger,
     score_vix,
+    score_news,
     get_market_regime,
     get_indicator_weights,
     score_opening_range,
@@ -172,6 +173,13 @@ def get_enhanced_prediction(
     else:
         scores['prev_day'] = 0
     
+    # FIX 10: News Sentiment
+    scores['news'] = score_news(news_data)
+    if scores['news'] != 0:
+        sentiment_text = news_data.get('overall', 'N/A')
+        sentiment_score = news_data.get('score', 0)
+        reasons.append(f"News: {scores['news']:+d} ({sentiment_text}, {sentiment_score:+.2f})")
+    
     # Global market sentiment (simple scoring)
     scores['global'] = 0
     # Add simple global scoring if needed
@@ -185,6 +193,7 @@ def get_enhanced_prediction(
         scores.get('ema', 0) * weights['ema'] +
         scores.get('bb', 0) * weights['bb'] +
         scores.get('vix', 0) * weights['vix'] +
+        scores.get('news', 0) * weights['news'] +
         scores.get('opening_range', 0) * 0.15 +  # Fixed weight
         scores.get('prev_day', 0) * 0.10 +  # Fixed weight
         scores.get('global', 0) * weights['global']

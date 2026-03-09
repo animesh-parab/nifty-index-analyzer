@@ -217,7 +217,8 @@ def get_indicator_weights(regime):
             'ema': 0.30,
             'bb': 0.05,
             'vix': 0.15,
-            'global': 0.10
+            'news': 0.05,
+            'global': 0.05
         }
     elif regime == 'RANGING':
         return {
@@ -226,7 +227,8 @@ def get_indicator_weights(regime):
             'ema': 0.10,
             'bb': 0.30,
             'vix': 0.10,
-            'global': 0.10
+            'news': 0.10,
+            'global': 0.00
         }
     else:  # NEUTRAL
         return {
@@ -235,7 +237,8 @@ def get_indicator_weights(regime):
             'ema': 0.20,
             'bb': 0.10,
             'vix': 0.15,
-            'global': 0.15
+            'news': 0.10,
+            'global': 0.05
         }
 
 
@@ -311,3 +314,78 @@ def score_previous_day_levels(price, prev_day_high, prev_day_low):
         score -= 1      # Near previous day low = mild bearish
 
     return score
+
+
+# ================================================================
+# FIX 10 — NEWS SENTIMENT SCORING
+# ================================================================
+
+def score_news(news_data: dict) -> int:
+    """
+    Score based on news sentiment.
+    News sentiment can provide early signals before technical indicators.
+
+    Args:
+        news_data: Dict with 'score' (-1 to +1) and 'overall' (text)
+
+    Returns:
+        Score from -2 to +2
+    """
+    if not news_data or 'score' not in news_data:
+        return 0
+
+    sentiment_score = news_data.get('score', 0)
+
+    # Strong positive sentiment
+    if sentiment_score > 0.5:
+        return 2
+    # Moderate positive sentiment
+    elif sentiment_score > 0.2:
+        return 1
+    # Strong negative sentiment
+    elif sentiment_score < -0.5:
+        return -2
+    # Moderate negative sentiment
+    elif sentiment_score < -0.2:
+        return -1
+
+    # Neutral sentiment
+    return 0
+
+
+
+# ================================================================
+# FIX 10 — NEWS SENTIMENT SCORING
+# ================================================================
+
+def score_news(news_data: dict) -> int:
+    """
+    Score based on news sentiment.
+    News sentiment can provide early signals before technical indicators.
+    
+    Args:
+        news_data: Dict with 'score' (-1 to +1) and 'overall' (text)
+    
+    Returns:
+        Score from -2 to +2
+    """
+    if not news_data or 'score' not in news_data:
+        return 0
+    
+    sentiment_score = news_data.get('score', 0)
+    
+    # Strong positive sentiment
+    if sentiment_score > 0.5:
+        return 2
+    # Moderate positive sentiment
+    elif sentiment_score > 0.2:
+        return 1
+    # Strong negative sentiment
+    elif sentiment_score < -0.5:
+        return -2
+    # Moderate negative sentiment
+    elif sentiment_score < -0.2:
+        return -1
+    
+    # Neutral sentiment
+    return 0
