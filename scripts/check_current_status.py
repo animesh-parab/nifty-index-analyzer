@@ -2,7 +2,7 @@
 import pandas as pd
 from datetime import datetime
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 
 print("="*70)
 print("CURRENT CSV STATUS")

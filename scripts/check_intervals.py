@@ -1,7 +1,7 @@
 """Check logging intervals"""
 import pandas as pd
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 
 print("="*70)
 print("LOGGING INTERVAL CHECK")

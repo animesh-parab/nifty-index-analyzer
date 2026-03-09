@@ -64,7 +64,7 @@ print("Step 1: Loading prediction_log.csv...")
 report_lines.append("Step 1: Loading prediction_log.csv")
 
 try:
-    df = pd.read_csv('prediction_log.csv')
+    df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
     print(f"✅ Loaded {len(df)} rows")
     report_lines.append(f"✅ Loaded {len(df)} rows")
 except Exception as e:

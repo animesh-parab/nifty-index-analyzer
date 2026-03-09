@@ -14,7 +14,7 @@ print("="*70)
 
 # Read prediction log
 try:
-    df = pd.read_csv('prediction_log.csv')
+    df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
     
     # Convert timestamp to datetime
     df['timestamp'] = pd.to_datetime(df['timestamp'])

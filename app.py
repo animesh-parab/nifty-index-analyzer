@@ -632,7 +632,7 @@ def main():
         
         try:
             # Read prediction log and filter for signals only
-            df_log = pd.read_csv('prediction_log.csv')
+            df_log = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
             
             # Filter for BULLISH or BEARISH predictions (not SIDEWAYS)
             df_signals = df_log[df_log['final_direction'].isin(['BULLISH', 'BEARISH'])].tail(20)
@@ -701,7 +701,7 @@ def main():
         st.markdown(f"<h3 style='color: {theme['accent']};'>Model Performance Tracker</h3>", unsafe_allow_html=True)
         
         try:
-            df_log = pd.read_csv('prediction_log.csv')
+            df_log = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
             
             # Filter for predictions with outcomes
             df_with_outcomes = df_log[df_log['actual_outcome'].notna()]

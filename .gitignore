@@ -47,6 +47,9 @@ logs/
 *.csv
 !instruments_nifty_options.csv
 
+# V2 Logger daily backups (keep main predictions_v2.csv tracked)
+new_logger/predictions_v2_*.csv
+
 # Historical data folders (not needed for live trading)
 kaggle/
 archive_historical_experiments/

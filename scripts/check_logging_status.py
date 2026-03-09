@@ -24,7 +24,7 @@ print(f"Market Status: {'OPEN ✅' if market_open else 'CLOSED ❌'}")
 
 # Check CSV file
 try:
-    df = pd.read_csv('prediction_log.csv')
+    df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
     print(f"\nCSV File: prediction_log.csv")
     print(f"Total Predictions: {len(df)}")
     

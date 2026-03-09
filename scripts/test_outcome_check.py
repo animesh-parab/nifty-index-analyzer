@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import yfinance as yf
 
 # Get predictions that should have outcomes by now (older than 15 minutes)
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 
 # Filter predictions without outcomes that are older than 15 minutes
 now = datetime.now()

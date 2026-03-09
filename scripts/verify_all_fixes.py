@@ -14,7 +14,7 @@ except ImportError:
     print("   Run: pip install schedule")
 
 # Check 2: PCR column removed
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 if 'pcr' in df.columns:
     print("\n❌ Issue 2: PCR column still exists")
 else:

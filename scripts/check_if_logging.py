@@ -2,7 +2,7 @@
 import pandas as pd
 from datetime import datetime
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 print(f"Total predictions: {len(df)}")
 
 if len(df) > 0:

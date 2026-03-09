@@ -1,7 +1,7 @@
 """Check actual_outcome filling status"""
 import pandas as pd
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 print(f'Total rows: {len(df)}')
 print(f'Rows with outcome: {df["actual_outcome"].notna().sum()}')
 print(f'Rows without outcome: {df["actual_outcome"].isna().sum()}')

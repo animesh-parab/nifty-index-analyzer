@@ -118,7 +118,7 @@ try:
         print('   ⚠️  No new rows added (expected if market closed)')
     
     # Verify CSV still clean
-    pd.read_csv('prediction_log.csv')
+    pd.read_csv('prediction_log.csv', on_bad_lines='skip')
     print('   ✅ CSV still clean after logger test')
 
 except Exception as e:

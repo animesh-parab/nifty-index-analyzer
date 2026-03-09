@@ -1,7 +1,7 @@
 """Check which APIs are being used in the logger"""
 import pandas as pd
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 
 print("="*70)
 print("API USAGE CHECK")

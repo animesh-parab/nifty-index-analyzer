@@ -15,11 +15,11 @@ def backfill_outcomes():
     # Read the log
     df = pd.read_csv(LOG_FILE)
     
-    # Convert timestamp to datetime
-    df['timestamp_dt'] = pd.to_datetime(df['timestamp'])
+    # Convert timestamp to datetime (handle both old and new formats)
+    df['timestamp_dt'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True)
     
     # Calculate age in minutes
-    now = datetime.now()
+    now = pd.Timestamp.now(tz='UTC')
     df['age_minutes'] = (now - df['timestamp_dt']).dt.total_seconds() / 60
     
     # Find predictions that need outcomes (>15 min old, no outcome yet)

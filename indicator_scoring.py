@@ -43,11 +43,11 @@ def get_time_confidence_multiplier(hour, minute):
         return 1.0              # Full confidence
     
     # Pre-close zone
-    if 870 <= time < 900:       # 14:30-15:00 PM
-        return 0.7              # Reduced confidence
+    if 870 <= time < 925:       # 14:30-15:25 PM
+        return 0.7              # Reduced confidence pre-close
     
     # Closing (unreliable data)
-    if time >= 900:             # After 15:00 PM
+    if time >= 925:             # After 15:25 PM
         return None
 
 

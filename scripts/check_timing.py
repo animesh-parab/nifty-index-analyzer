@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 df['timestamp'] = pd.to_datetime(df['timestamp'])
 
 # Get recent predictions (after 10:00 AM)

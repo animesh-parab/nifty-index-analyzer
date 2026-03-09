@@ -20,7 +20,7 @@ print("XGBOOST MODEL - CONFUSION MATRIX & DETAILED ANALYSIS")
 print("="*80)
 
 # Load data
-df = pd.read_csv('prediction_log.csv')
+df = pd.read_csv('prediction_log.csv', on_bad_lines='skip')
 df = df.dropna(subset=['actual_outcome'])
 
 print(f"\nTotal samples: {len(df)}")
